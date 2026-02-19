@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNASAT AI Assistent</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .chat-container { width: 450px; height: 80vh; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .header { background: #004a99; color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center; font-weight: bold; }
+        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.4; font-size: 14px; }
+        .user { background: #004a99; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .bot { background: #e4e6eb; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .input-area { padding: 15px; border-top: 1px solid #ddd; display: flex; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
+        button { background: #004a99; color: white; border: none; padding: 10px 20px; margin-left: 10px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #003366; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">🇸🇷 UNASAT Student Assistent</div>
+    <div id="chat-window">
+        <div class="message bot">Hallo! Ik ben je AI-assistent. Hoe kan ik je vandaag helpen bij UNASAT?</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Stel je vraag..." onkeypress="if(event.key === 'Enter') sendMessage()">
+        <button onclick="sendMessage()">Stuur</button>
+    </div>
+</div>
+
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('user-input');
+        const window = document.getElementById('chat-window');
+        const text = input.value.trim();
+        
+        if (!text) return;
+
+        // Voeg jouw bericht toe
+        window.innerHTML += `<div class="message user">${text}</div>`;
+        input.value = '';
+        window.scrollTop = window.scrollHeight;
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+            const data = await response.json();
+            
+            // Voeg bot bericht toe
+            window.innerHTML += `<div class="message bot">${data.reply}</div>`;
+            window.scrollTop = window.scrollHeight;
+        } catch (error) {
+            window.innerHTML += `<div class="message bot" style="color: red;">Fout: Kan geen verbinding maken met de server.</div>`;
+        }
+    }
+</script>
+
+</body>
+</html>
