@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: unasat-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: unasat_db
+      MYSQL_USER: unasat_user
+      MYSQL_PASSWORD: unasat_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+
+  app:
+    build: .
+    container_name: unasat-app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_USER: unasat_user
+      DB_PASSWORD: unasat_pass
+      DB_NAME: unasat_db
+      HF_TOKEN: ${HF_TOKEN}            # wordt uit .env gehaald
+      ADMIN_API_KEY: ${ADMIN_API_KEY}  # optioneel, voor admin-beveiliging
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./static:/code/static          # statische bestanden (index.html, admin.html, logo)
+    env_file:
+      - .env                            # laad alle variabelen uit .env (optioneel)
+
+volumes:
+  mysql_data:

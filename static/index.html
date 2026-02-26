@@ -2,64 +2,434 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNASAT AI Assistent</title>
+    <title>UNASAT Student SIS v2.0</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .chat-container { width: 450px; height: 80vh; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
-        .header { background: #004a99; color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center; font-weight: bold; }
-        #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.4; font-size: 14px; }
-        .user { background: #004a99; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .bot { background: #e4e6eb; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
-        .input-area { padding: 15px; border-top: 1px solid #ddd; display: flex; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; outline: none; }
-        button { background: #004a99; color: white; border: none; padding: 10px 20px; margin-left: 10px; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #003366; }
+        :root { 
+            --unasat-blue: #003366; 
+            --unasat-orange: #e67e22;
+            --sidebar-width: 260px;
+            --bg-light: #f4f7f9;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+        
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg-light); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- MODERN LOGIN --- */
+        #login-wrap { 
+            position: fixed; width: 100%; height: 100%; z-index: 9999;
+            background: linear-gradient(135deg, var(--unasat-blue) 0%, #001a33 100%);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        #login-wrap::before {
+            content: ""; position: absolute; width: 400px; height: 400px; background: rgba(230, 126, 34, 0.1);
+            border-radius: 50%; top: -150px; right: -150px;
+        }
+
+        .login-card { 
+            background: var(--glass); padding: 45px; border-radius: 15px; width: 360px; text-align: center; 
+            backdrop-filter: blur(10px); box-shadow: 0 25px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
+        }
+        .login-card img { width: 130px; margin-bottom: 25px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1)); }
+        .login-card h2 { color: var(--unasat-blue); margin-bottom: 30px; font-weight: 800; letter-spacing: -0.5px; }
+        .login-card input { 
+            width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; 
+            box-sizing: border-box; background: rgba(255,255,255,0.9); font-size: 15px;
+        }
+        .login-card button { 
+            width: 100%; padding: 14px; background: var(--unasat-blue); color: white; border: none; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; font-size: 16px;
+        }
+        .login-card button:hover { background: var(--unasat-orange); transform: translateY(-2px); }
+
+        /* --- PORTAL STRUCTUUR --- */
+        #portal { display: none; width: 100%; height: 100%; }
+        
+        nav { width: var(--sidebar-width); background: var(--unasat-blue); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .nav-header { padding: 40px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-header img { width: 90px; }
+        
+        .nav-links { flex: 1; padding: 30px 0; }
+        .nav-item { 
+            padding: 16px 25px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; 
+            gap: 12px; opacity: 0.7; font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); opacity: 1; border-left: 5px solid var(--unasat-orange); }
+
+        main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg-light); }
+        header { background: white; padding: 18px 45px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e1e8ed; }
+        
+        .container { padding: 40px 50px; max-width: 1100px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #dee5e9; padding-bottom: 10px; }
+        .section-title { font-size: 26px; color: var(--unasat-blue); font-weight: 700; margin: 0; }
+
+        .transcript-card { background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; padding: 20px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f8f9fa; color: #5a6d7e; text-align: left; padding: 18px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        .data-table td { padding: 18px; border-bottom: 1px solid #f1f4f6; color: #2c3e50; font-size: 15px; }
+        .grade-badge { background: var(--unasat-blue); color: white; padding: 6px 14px; border-radius: 6px; font-weight: 800; font-size: 14px; }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e8f5e9; color: #2e7d32; }
+
+        /* --- CHATBOT --- */
+        .chat-ball { position: fixed; bottom: 35px; right: 35px; background: var(--unasat-orange); color: white; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 30px; box-shadow: 0 10px 25px rgba(230, 126, 34, 0.4); z-index: 1000; transition: 0.3s; }
+        .chat-ball:hover { transform: rotate(15deg) scale(1.1); }
+        
+        .chat-win { position: fixed; bottom: 110px; right: 35px; width: 400px; height: 550px; background: white; border-radius: 16px; display: none; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden; z-index: 1001; border: 1px solid #e1e8ed; }
+        .chat-head { background: var(--unasat-blue); color: white; padding: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        
+        #chat-content { flex: 1; padding: 20px; overflow-y: auto; background: #ffffff; display: flex; flex-direction: column; gap: 18px; }
+        .m-row { display: flex; gap: 12px; align-items: flex-start; }
+        .m-row.u-row { justify-content: flex-end; }
+        
+        .bot-icon { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #eee; background: white; padding: 2px; }
+        .msg { padding: 12px 18px; border-radius: 18px; font-size: 14.5px; line-height: 1.5; max-width: 75%; position: relative; }
+        .b-msg { background: #f1f4f6; color: #333; border-bottom-left-radius: 4px; }
+        .u-msg { background: var(--unasat-blue); color: white; border-bottom-right-radius: 4px; }
+        
+        .f-bar { font-size: 11px; margin-top: 8px; color: #adb5bd; display: flex; gap: 10px; }
+        .chat-input-area { padding: 15px; border-top: 1px solid #eee; background: #f8f9fa; }
+        #msg-in { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 25px; outline: none; box-sizing: border-box; padding-left: 20px; }
+
+        .suggestions { display: flex; gap: 8px; padding: 10px 15px; flex-wrap: wrap; background: #f8f9fa; border-bottom: 1px solid #eee; }
+        .suggestions button { background: white; border: 1px solid #ddd; border-radius: 20px; padding: 8px 15px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .suggestions button:hover { background: var(--unasat-orange); color: white; border-color: var(--unasat-orange); }
+
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div class="chat-container">
-    <div class="header">🇸🇷 UNASAT Student Assistent</div>
-    <div id="chat-window">
-        <div class="message bot">Hallo! Ik ben je AI-assistent. Hoe kan ik je vandaag helpen bij UNASAT?</div>
+    <div id="login-wrap">
+        <div class="login-card">
+            <img src="/static/logo.png" alt="UNASAT">
+            <h2>Student Portal</h2>
+            <input type="text" id="u" placeholder="Gebruikersnaam">
+            <input type="password" id="p" placeholder="Wachtwoord">
+            <button onclick="login()">Inloggen</button>
+            <p id="err" style="color:#d32f2f; font-size:13px; display:none; margin-top:15px; font-weight:500;">Inloggen mislukt. Controleer uw gegevens.</p>
+        </div>
     </div>
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Stel je vraag..." onkeypress="if(event.key === 'Enter') sendMessage()">
-        <button onclick="sendMessage()">Stuur</button>
-    </div>
-</div>
 
-<script>
-    async function sendMessage() {
-        const input = document.getElementById('user-input');
-        const window = document.getElementById('chat-window');
-        const text = input.value.trim();
+    <div id="portal">
+        <nav>
+            <div class="nav-header">
+                <img src="/static/logo.png" alt="UNASAT">
+                <div style="font-size: 11px; margin-top:15px; letter-spacing: 2px; opacity: 0.6;">STUDENT SIS v2.0</div>
+            </div>
+            <div class="nav-links">
+                <div class="nav-item active" onclick="switchTab(this, 'dash')">📊 Dashboard</div>
+                <div class="nav-item" onclick="switchTab(this, 'grades')">📜 Mijn Cijfers</div>
+                <div class="nav-item" onclick="switchTab(this, 'rooster')">📅 Lesrooster</div>
+                <div class="nav-item" onclick="switchTab(this, 'mylogs')">📋 Mijn gesprekken</div>
+            </div>
+        </nav>
+
+        <main>
+            <header>
+                <div style="color: #7f8c8d; font-size: 14px;">Bachelor of Science: <strong>Software Engineering</strong></div>
+                <div id="user-name" style="color: var(--unasat-blue); font-weight: 700; font-size: 16px;">Welkom...</div>
+            </header>
+
+            <div class="container">
+                <!-- Dashboard Tab -->
+                <section id="dash" class="tab-content active">
+                    <div class="section-header">
+                        <h2 class="section-title">Academisch Overzicht</h2>
+                        <div style="font-size: 14px; color: #7f8c8d;">Kwartaal 3, 2026</div>
+                    </div>
+                    <div style="background: white; padding: 25px; border-radius: 12px; border-left: 6px solid var(--unasat-orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                        <h4 style="margin: 0 0 10px 0; color: var(--unasat-blue);">Belangrijk: Examenregistratie</h4>
+                        <p style="margin: 0; color: #555; font-size: 14.5px;">De registratie voor de herkansingen van Kwartaal 2 sluit aanstaande vrijdag om 23:59u. Zorg dat je tijdig bent ingeschreven via het SIS.</p>
+                    </div>
+                </section>
+
+                <!-- Cijfers Tab -->
+                <section id="grades" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Mijn Resultaten</h2>
+                    </div>
+                    <div class="transcript-card" id="grades-container">
+                        <p style="padding: 20px;">Klik op de tab om je cijfers te laden...</p>
+                    </div>
+                </section>
+
+                <!-- Rooster Tab -->
+                <section id="rooster" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Mijn Lesrooster</h2>
+                    </div>
+                    <div class="transcript-card" id="rooster-container">
+                        <p style="padding: 20px;">Klik op de tab om je rooster te laden...</p>
+                    </div>
+                </section>
+
+                <!-- Mijn gesprekken Tab -->
+                <section id="mylogs" class="tab-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Mijn chatgeschiedenis</h2>
+                    </div>
+                    <div class="transcript-card" id="mylogs-container">
+                        <p style="padding:20px;">Klik op de tab om je gesprekken te laden...</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Chatbot -->
+        <div class="chat-ball" onclick="toggleChat()">💬</div>
         
-        if (!text) return;
+        <div class="chat-win" id="chat-win">
+            <div class="chat-head">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="/static/logo.png" style="width:25px; background:white; border-radius:4px; padding:2px;">
+                    <span>UNASAT AI Support</span>
+                </div>
+                <span onclick="toggleChat()" style="cursor:pointer; font-size: 24px;">×</span>
+            </div>
+            <div id="chat-content"></div>
+            <div class="suggestions">
+                <button onclick="quickAsk('Wat zijn mijn cijfers?')">📊 Mijn cijfers</button>
+                <button onclick="quickAsk('Wat is mijn rooster?')">📅 Mijn rooster</button>
+                <button onclick="quickAsk('Ik wil studieadvies')">🎓 Studieadvies</button>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="msg-in" placeholder="Stel je vraag over cijfers of roosters..." onkeypress="if(event.key==='Enter') send()">
+            </div>
+        </div>
+    </div>
 
-        // Voeg jouw bericht toe
-        window.innerHTML += `<div class="message user">${text}</div>`;
-        input.value = '';
-        window.scrollTop = window.scrollHeight;
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    let currentLoggedUser = "Gast";
+    let hasWelcomed = false;
 
+    function switchTab(el, tabId) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+
+        if (tabId === 'grades') fetchGrades();
+        if (tabId === 'rooster') fetchSchedule();
+        if (tabId === 'mylogs') fetchMyLogs();
+    }
+
+    // Nieuwe functie voor cijfers (zonder AI)
+    async function fetchGrades() {
+        const container = document.getElementById('grades-container');
+        container.innerHTML = `<p style="padding:20px;">Cijfers laden...</p>`;
         try {
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text })
+            const res = await fetch(`/grades?username=${encodeURIComponent(currentLoggedUser)}`);
+            const grades = await res.json();
+            if (!grades || grades.length === 0) {
+                container.innerHTML = `<p style="padding:20px;">Geen cijfers gevonden.</p>`;
+                return;
+            }
+            let html = '<table class="data-table"><tr><th>Module</th><th>Cijfer</th></tr>';
+            grades.forEach(g => {
+                html += `<tr><td>${escapeHtml(g.module)}</td><td>${g.grade}</td></tr>`;
             });
-            const data = await response.json();
-            
-            // Voeg bot bericht toe
-            window.innerHTML += `<div class="message bot">${data.reply}</div>`;
-            window.scrollTop = window.scrollHeight;
-        } catch (error) {
-            window.innerHTML += `<div class="message bot" style="color: red;">Fout: Kan geen verbinding maken met de server.</div>`;
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = `<p style="padding:20px;color:red;">Fout bij laden: ${e.message}</p>`;
         }
     }
-</script>
 
+    // Nieuwe functie voor rooster (zonder AI)
+    async function fetchSchedule() {
+        const container = document.getElementById('rooster-container');
+        container.innerHTML = `<p style="padding:20px;">Rooster laden...</p>`;
+        try {
+            const res = await fetch(`/schedule?username=${encodeURIComponent(currentLoggedUser)}`);
+            const schedule = await res.json();
+            if (!schedule) {
+                container.innerHTML = `<p style="padding:20px;">Geen rooster gevonden.</p>`;
+                return;
+            }
+            let html = '<table class="data-table"><tr><th>Module</th><th>Dag</th><th>Tijd</th><th>Lokaal</th></tr>';
+            // schedule is één object (fetchone) – als je meerdere lessen wilt, moet je de functie aanpassen
+            html += `<tr><td>${escapeHtml(schedule.module)}</td><td>${escapeHtml(schedule.day)}</td><td>${escapeHtml(schedule.time)}</td><td>${escapeHtml(schedule.room)}</td></tr>`;
+            html += '</table>';
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = `<p style="padding:20px;color:red;">Fout bij laden: ${e.message}</p>`;
+        }
+    }
+
+    async function login() {
+        const u = document.getElementById('u').value;
+        const p = document.getElementById('p').value;
+        const res = await fetch('/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: u, password: p})
+        });
+
+        if(res.ok) {
+            const data = await res.json();
+            currentLoggedUser = data.username;
+            document.getElementById('login-wrap').style.display = 'none';
+            document.getElementById('portal').style.display = 'flex';
+            document.getElementById('user-name').innerText = "👤 " + data.full_name;
+        } else {
+            document.getElementById('err').style.display = 'block';
+        }
+    }
+
+    function toggleChat() { 
+        const w = document.getElementById('chat-win');
+        const isOpening = w.style.display !== 'flex';
+        w.style.display = isOpening ? 'flex' : 'none';
+
+        if (isOpening && !hasWelcomed) {
+            setTimeout(() => {
+                addBotMessage("Fawaka! Ik ben je virtuele UNASAT assistent. Hoe kan ik je vandaag helpen met je studie?");
+                hasWelcomed = true;
+            }, 500);
+        }
+    }
+
+    function quickAsk(text) {
+        document.getElementById('msg-in').value = text;
+        send();
+    }
+
+    async function send() {
+        const input = document.getElementById('msg-in');
+        const box = document.getElementById('chat-content');
+        const val = input.value.trim();
+        if(!val) return;
+
+        box.innerHTML += `<div class="m-row u-row"><div class="msg u-msg">${escapeHtml(val)}</div></div>`;
+        input.value = "";
+
+        box.innerHTML += `
+            <div class="m-row" id="bot-loader">
+                <img src="/static/logo.png" class="bot-icon">
+                <div class="msg b-msg"><em>Typen...</em></div>
+            </div>`;
+        box.scrollTop = box.scrollHeight;
+
+        try {
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ text: val, username: currentLoggedUser })
+            });
+
+            if (!res.ok) {
+                if (res.status === 429) throw new Error("rate_limit");
+                else if (res.status === 422) throw new Error("validation_error");
+                else throw new Error("server_error");
+            }
+
+            const data = await res.json();
+            addBotMessage(data.reply, data.id, data.latency);
+
+        } catch (e) {
+            const loader = document.getElementById('bot-loader');
+            if(loader) loader.remove();
+
+            if (e.message === "rate_limit") {
+                addBotMessage("Je hebt te veel berichten in korte tijd gestuurd. Even wachten en probeer het opnieuw.");
+            } else if (e.message === "validation_error") {
+                addBotMessage("Je bericht is te lang (maximaal 500 karakters). Kun je het korter maken?");
+            } else {
+                addBotMessage("Sorry, er is een technische fout opgetreden. Probeer het later opnieuw.");
+            }
+        }
+    }
+
+    function addBotMessage(text, id = null, latency = null) {
+        const box = document.getElementById('chat-content');
+        const loader = document.getElementById('bot-loader');
+        if(loader) loader.remove();
+
+        const htmlContent = marked.parse(text);
+
+        let feedback = id ? `
+            <div class="f-bar">
+                <span onclick="feed(${id}, 'good', this)" style="cursor:pointer">👍</span> 
+                <span onclick="feed(${id}, 'bad', this)" style="cursor:pointer">👎</span> 
+                <span>| ${latency}s response</span>
+            </div>` : (latency ? `<div class="f-bar">latency ${latency}s</div>` : "");
+
+        box.innerHTML += `
+            <div class="m-row">
+                <img src="/static/logo.png" class="bot-icon">
+                <div class="msg b-msg">
+                    ${htmlContent}
+                    ${feedback}
+                </div>
+            </div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function feed(id, score, el) {
+        try {
+            await fetch('/feedback', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: id, score: score})
+            });
+            el.parentElement.innerHTML = "Bedankt! ✨";
+        } catch {
+            el.parentElement.innerHTML = "Fout bij verzenden";
+        }
+    }
+
+    async function fetchMyLogs() {
+        const container = document.getElementById('mylogs-container');
+        container.innerHTML = `<p style="padding:20px;">Laden...</p>`;
+        try {
+            const res = await fetch(`/my-logs?username=${encodeURIComponent(currentLoggedUser)}`);
+            const logs = await res.json();
+            
+            if (logs.length === 0) {
+                container.innerHTML = `<p style="padding:20px;">Je hebt nog geen gesprekken gevoerd.</p>`;
+                return;
+            }
+            
+            let html = '<table class="data-table"><thead><tr><th>Vraag</th><th>Antwoord</th><th>Latency</th><th>Feedback</th><th>Tijdstip</th></tr></thead><tbody>';
+            logs.forEach(log => {
+                let tijdstip = '';
+                if (log.timestamp) {
+                    const date = new Date(log.timestamp);
+                    tijdstip = date.toLocaleString('nl-NL', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                }
+                html += `<tr>
+                    <td>${escapeHtml(log.user_input)}</td>
+                    <td>${escapeHtml(log.bot_reply)}</td>
+                    <td>${log.latency}s</td>
+                    <td>${log.feedback ? (log.feedback === 'good' ? '👍' : '👎') : '-'}</td>
+                    <td>${tijdstip}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = `<p style="padding:20px;color:red;">Fout bij laden: ${e.message}</p>`;
+        }
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/[&<>"]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            if (m === '"') return '&quot;';
+            return m;
+        });
+    }
+</script>
 </body>
 </html>

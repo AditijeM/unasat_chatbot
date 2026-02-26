@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Monitoring & Gebruikersbeheer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #f4f7f6; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 800px; margin-bottom: 40px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #0056b3; }
+        h2 { margin-top: 40px; color: #333; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #0056b3; color: white; }
+        tr:hover { background: #f1f1f1; }
+        .feedback-good { color: green; font-weight: bold; }
+        .feedback-bad { color: red; font-weight: bold; }
+        .container { max-width: 1200px; margin: auto; }
+
+        /* Form styling */
+        .form-section { background: white; padding: 20px; border-radius: 10px; margin-bottom: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input[type=text], input[type=password], input[type=number] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { background: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #003d82; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #545b62; }
+        .item-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .item-row input { flex: 1; }
+        .remove-btn { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; }
+        .remove-btn:hover { background: #bd2130; }
+        .message { padding: 10px; margin-top: 10px; border-radius: 4px; display: none; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Admin Panel - Gebruikersbeheer & Monitoring</h1>
+
+        <!-- Formulier nieuwe gebruiker -->
+        <div class="form-section">
+            <h2>➕ Nieuwe student aanmaken</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label>Gebruikersnaam:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Wachtwoord:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label>Volledige naam:</label>
+                    <input type="text" id="fullname" required>
+                </div>
+
+                <h3>Cijfers</h3>
+                <div id="grades-container">
+                    <div class="item-row">
+                        <input type="text" placeholder="Module (bv. Databases)" class="grade-module">
+                        <input type="number" step="0.1" placeholder="Cijfer" class="grade-grade">
+                        <input type="number" placeholder="EC" class="grade-ec">
+                        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addGradeRow()">➕ Cijfer toevoegen</button>
+
+                <h3>Rooster</h3>
+                <div id="schedule-container">
+                    <div class="item-row">
+                        <input type="text" placeholder="Module" class="schedule-module">
+                        <input type="text" placeholder="Dag (bv. Maandag)" class="schedule-day">
+                        <input type="text" placeholder="Tijd (bv. 14:00u)" class="schedule-time">
+                        <input type="text" placeholder="Lokaal" class="schedule-room">
+                        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addScheduleRow()">➕ Roosteritem toevoegen</button>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn">Gebruiker aanmaken</button>
+                </div>
+                <div id="formMessage" class="message"></div>
+            </form>
+        </div>
+
+        <!-- Statistieken (bestaand) -->
+        <h2>📈 Statistieken</h2>
+        <div class="stats-grid">
+            <div class="card"><h3>Totaal Chats</h3><div id="t" style="font-size:30px;">0</div></div>
+            <div class="card"><h3>Gem. Vertraging</h3><div id="l" style="font-size:30px;">0s</div></div>
+            <div class="card" style="grid-column: span 2;">
+                <canvas id="chart"></canvas>
+            </div>
+        </div>
+
+        <h2>📋 Alle chatlogs</h2>
+        <div style="overflow-x: auto;">
+            <table id="logs-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Gebruiker</th>
+                        <th>Vraag</th>
+                        <th>Antwoord (verkort)</th>
+                        <th>Latency</th>
+                        <th>Feedback</th>
+                        <th>Tijdstip</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Dynamische rijen voor cijfers en rooster
+        function addGradeRow() {
+            const container = document.getElementById('grades-container');
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `
+                <input type="text" placeholder="Module" class="grade-module">
+                <input type="number" step="0.1" placeholder="Cijfer" class="grade-grade">
+                <input type="number" placeholder="EC" class="grade-ec">
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function addScheduleRow() {
+            const container = document.getElementById('schedule-container');
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `
+                <input type="text" placeholder="Module" class="schedule-module">
+                <input type="text" placeholder="Dag" class="schedule-day">
+                <input type="text" placeholder="Tijd" class="schedule-time">
+                <input type="text" placeholder="Lokaal" class="schedule-room">
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Form submit
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Verzamel cijfers
+            const gradeRows = document.querySelectorAll('#grades-container .item-row');
+            const grades = [];
+            gradeRows.forEach(row => {
+                const module = row.querySelector('.grade-module').value;
+                const grade = row.querySelector('.grade-grade').value;
+                const ec = row.querySelector('.grade-ec').value;
+                if (module && grade && ec) {
+                    grades.push({ module, grade: parseFloat(grade), ec: parseInt(ec) });
+                }
+            });
+
+            // Verzamel rooster
+            const scheduleRows = document.querySelectorAll('#schedule-container .item-row');
+            const schedule = [];
+            scheduleRows.forEach(row => {
+                const module = row.querySelector('.schedule-module').value;
+                const day = row.querySelector('.schedule-day').value;
+                const time = row.querySelector('.schedule-time').value;
+                const room = row.querySelector('.schedule-room').value;
+                if (module && day && time && room) {
+                    schedule.push({ module, day, time, room });
+                }
+            });
+
+            const payload = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                full_name: document.getElementById('fullname').value,
+                grades: grades,
+                schedule: schedule
+            };
+
+            try {
+                const res = await fetch('/admin/create-user', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                const msgDiv = document.getElementById('formMessage');
+                if (res.ok) {
+                    msgDiv.className = 'message success';
+                    msgDiv.innerText = '✅ Gebruiker aangemaakt!';
+                    msgDiv.style.display = 'block';
+                    document.getElementById('userForm').reset();
+                    // Leeg de dynamische rijen (behalve de eerste lege)
+                    document.getElementById('grades-container').innerHTML = '<div class="item-row"> ... </div>'; // herstel een lege rij
+                    document.getElementById('schedule-container').innerHTML = '<div class="item-row"> ... </div>';
+                    // Voeg de eerste lege rij weer toe
+                    addGradeRow();
+                    addScheduleRow();
+                } else {
+                    msgDiv.className = 'message error';
+                    msgDiv.innerText = '❌ Fout: ' + data.detail;
+                    msgDiv.style.display = 'block';
+                }
+            } catch (err) {
+                const msgDiv = document.getElementById('formMessage');
+                msgDiv.className = 'message error';
+                msgDiv.innerText = '❌ Fout bij verzenden: ' + err.message;
+                msgDiv.style.display = 'block';
+            }
+        });
+
+        // Bestaande statistiek- en logfuncties (ongewijzigd)
+        async function loadStats() {
+            const res = await fetch('/stats');
+            const d = await res.json();
+            document.getElementById('t').innerText = d.total;
+            document.getElementById('l').innerText = d.latency + "s";
+
+            new Chart(document.getElementById('chart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Positief 👍', 'Negatief 👎'],
+                    datasets: [{ label: 'Feedback', data: [d.good, d.bad], backgroundColor: ['#28a745', '#dc3545'] }]
+                }
+            });
+        }
+
+        async function loadLogs() {
+            const res = await fetch('/logs');
+            const logs = await res.json();
+            const tbody = document.querySelector('#logs-table tbody');
+            tbody.innerHTML = '';
+            logs.forEach(log => {
+                const row = tbody.insertRow();
+                row.insertCell().textContent = log.id || '-';
+                row.insertCell().textContent = log.username || 'onbekend';
+                row.insertCell().textContent = log.user_input || '';
+                const shortReply = log.bot_reply ? (log.bot_reply.length > 100 ? log.bot_reply.substring(0,100) + '…' : log.bot_reply) : '';
+                row.insertCell().textContent = shortReply;
+                row.insertCell().textContent = (log.latency ? log.latency + 's' : '-');
+                const feedbackCell = row.insertCell();
+                if (log.feedback === 'good') {
+                    feedbackCell.innerHTML = '<span class="feedback-good">👍 Positief</span>';
+                } else if (log.feedback === 'bad') {
+                    feedbackCell.innerHTML = '<span class="feedback-bad">👎 Negatief</span>';
+                } else {
+                    feedbackCell.textContent = '-';
+                }
+                row.insertCell().textContent = log.timestamp ? new Date(log.timestamp).toLocaleString() : '-';
+            });
+        }
+
+        loadStats();
+        loadLogs();
+
+        // Init: zorg voor minimaal één lege rij in cijfers en rooster
+        window.onload = function() {
+            if (document.querySelectorAll('#grades-container .item-row').length === 0) addGradeRow();
+            if (document.querySelectorAll('#schedule-container .item-row').length === 0) addScheduleRow();
+        };
+    </script>
+</body>
+</html>

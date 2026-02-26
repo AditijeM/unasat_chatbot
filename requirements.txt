@@ -2,3 +2,8 @@ fastapi
 uvicorn
 requests
 python-dotenv
+slowapi
+pymysql
+cryptography
+bcrypt
+langdetect==1.0.9
