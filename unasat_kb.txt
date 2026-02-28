@@ -7,52 +7,308 @@
 ## Location
 - Paramaribo, Suriname
 - Address: Hindilaan 1B, Paramaribo, Suriname
-- Also active in: Nieuw-Nickerie
+- Also active in: Nieuw-Nickerie (CCN-gebouw, Walther Hewittstraat 1)
 
 ## Type
 - Higher professional education institution (HBO level)
 - Practice-oriented bachelor programs for career readiness
+- Blended learning (combination of online and on‑campus education)
 
-## Schools and Programs
-
-### School of ICT (SOI)
-- Software Engineering
-- System Network Engineering
-- Business Informatics
-
-### School of Management & Economics (SOME)
-- Business Administration
-- Business Economics
-- Communication Management
+## History
+- Founded in September 2010 by AdeKUS in cooperation with the Hogeschool van Amsterdam (HvA).
+- Now an independent foundation.
 
 ## Mission & Vision
-- Provide practice-oriented higher education aligned with international standards
-- Prepare students for professional careers in technology, business, and management
-- Collaborate with national and international institutions to strengthen applied learning
+- Mission: Education focused on personal professionalization, effectively contributing to organizational success.
+- Vision: To be the learning center of the region, leader in developing educational programs aligned with international trends.
+- Slogans: "Education for Success" and "Striving for Excellence".
 
-## Advisory Function (Study Advice)
-When a user asks for study advice, follow these steps:
-1. **First, ask 2–3 short questions** about:
-   - Their interests and passions
-   - Preferred career field (technical, business, creative)
-   - Their strengths and favorite subjects
-2. **After receiving answers**, recommend 1–2 UNASAT programs that fit their profile.
-3. **Explain why** each program suits them, including practical career relevance.
-4. **Do NOT invent programs** that are not listed in the knowledge base.
-5. **Do NOT give unrelated advice.**
+---
 
-## Answer Style Guidelines
-- **Language**: Always answer in the same language as the user's question (Dutch or English).  
-- **Tone**: Professional but accessible.  
-- **Structure**: Use clear, structured paragraphs (max 5–8 sentences per answer).  
-- **First mention**: Always include the full institution name at least once in the answer, using the appropriate language version.  
-- **Location**: Mention Paramaribo, Suriname when relevant.  
-- **If information is not available**: Respond with:  
-  *"This information is not available in the UNASAT database."*  
-- **Important**: UNASAT is **NOT** related to the United Nations, and it is **NOT** a satellite program.
+## Organisation
 
-## Additional Facts (Optional, for extra detail)
-- Founded: [if known, add year]
-- Accreditation: [if known, add details]
-- Tuition fees: [if needed]
-- Application deadlines: [if needed]
+### Board
+- Members: Trevo‑Lyn Feurich (chair), John King, Mitchell Alvares, Fred Bobson.
+
+### Director
+- Carole-Ann Partoredjo (daily management).
+
+### Coordinators
+- **Programme Coordinators (OC)**:
+  - SOME: Grace Tjon A Pauw (someopleidingscoordinator@unasat.sr)
+  - SOI: Diego Ameerali (ocsoi@unasat.sr)
+- **Internship Coordinators**:
+  - SOME: Danitsa Hek
+  - SOI: Carlos Abdoellah
+- **Graduation Coordinators**:
+  - SOME: Cindy Radji
+  - SOI: Raimund Fong Tin Joen
+- **Personal Professionalization (PP) Coordinator**: Peggy Nijhove
+
+### Examination Board (Examencommissie)
+- Members: Indira Ramdin, Radha Thakoerdin, Lekhram Soerdjan, Joan Apinsa, Cindy Radji.
+- Email: examencommissie@unasat.sr
+- Handles exemptions, grade lists, and fraud/plagiarism cases.
+
+### Quality Assurance
+- Team: Meryl Pocorni, Bernavela Doesburg, Pudja Pancham.
+- Email: quality@unasat.sr
+- ISO certified since 2015; programmes accredited by NOVA.
+
+### Administration
+- **Student Administration**: studentenadministratie@unasat.sr (Ellery Wiroredjo, Alicia Rasdan)
+- **Financial Administration**: finance@unasat.sr (Steve Ravenberg, Jomara Mencke, Claudia Moesliman)
+- **Grade Administration**: cijferadministratie@unasat.sr
+
+### Study Advisors (Mentors)
+- Assigned per cohort; contact via UNASAT email. See the Statuut for the full list.
+
+### Programme Committees (OLC)
+- Student representatives for SOME and SOI; provide feedback on education quality.
+
+---
+
+## Programmes
+
+### School of Management & Economics (SOME)
+Bachelor programmes:
+- Business Administration (Bedrijfskunde)
+- Business Economics (Bedrijfseconomie)
+- Communication Management (Communicatiemanagement)
+
+Associate Degrees (AD):
+- Ondernemerschap (started 2021‑2022)
+- Accounting (started 2022‑2023)
+
+### School of ICT (SOI)
+Bachelor programmes:
+- Software Engineering
+- System Network Engineering
+- Business Informatics (Bedrijfskundige Informatica)
+
+Associate Degrees:
+- Network & Cloud Administrator (NCA)
+- Software Developer
+
+### Other Institutes (less relevant for students)
+- IRD (Institute for Research & Development)
+- ICS (Institute for Certified Studies)
+- AROOO (Centre for Agricultural and Rural Development)
+- Educon (Education and Communication Network)
+
+---
+
+## Admission & Enrolment
+
+### Prior Education Requirements
+- **SOME**: HAVO with Mathematics and/or Economics, VWO with Mathematics and/or Economics, MBO (IMEAO – Business Economics or Commercial Economics or Business Administration), NATIN Business Administration.
+- **SOI**: VWO with Mathematics 1, HAVO with Mathematics 1, NATIN with Mathematics.
+- MBO level 4 diplomas (from 2012 onwards) also qualify.
+
+### Foreign Diplomas
+- Diplomas that give access to higher education in the country of origin are accepted if the country ratified the Lisbon Recognition Convention. Proof of Dutch language proficiency may be required.
+
+### Entrance Examination (Instroomtoets)
+- For applicants who do not meet the prior education requirements. Determines suitability for the programme.
+
+### Enrolment Procedure
+- First registration via the website; invitation for intake follows.
+- Re‑enrolment starts in April; forms are sent by student administration.
+- A student is officially enrolled only after full payment of tuition fees.
+
+### Tuition Fees (College Year 2024‑2025)
+- **SOME Paramaribo**:
+  - Administration fee: SRD 2,000
+  - Tuition: SRD 15,000
+  - Licence fees (e‑books, Trajectplanner, etc.): €250
+- **ICT**:
+  - Administration fee: SRD 2,000
+  - Tuition: SRD 14,000
+  - Licence fees: €100
+- **SOME Nickerie**:
+  - Same as Paramaribo but deposited on separate accounts.
+- Payments can be made in SRD, USD, or EUR (at daily exchange rate). Payment in instalments possible in agreement with the finance department.
+
+### Payment Deadlines
+- At enrolment: administration fee + 50% of tuition.
+- Full payment must be completed before the start of the academic year (or before internship/graduation).
+
+### Deregistration
+- A student must notify student administration in writing. Deregistration before the end of November may prevent being charged for the full academic year.
+
+---
+
+## Education & Examinations
+
+### Academic Year
+- Starts 1 November, ends 31 October of the following year.
+
+### Study Load
+- 1 EC = 28 study hours.
+- Bachelor: 240 EC (60 EC propaedeuse, 180 EC post‑propaedeuse).
+
+### Teaching Language
+- Mostly Dutch; some courses in English. English literature may be used.
+
+### Examinations (Tentamens)
+- Two examination opportunities per academic year per course.
+- Results are published within 10 working days (written exams) or 20 working days (professional products).
+- Grades on a scale 1–10, with 5.5 as the minimum pass.
+- 40% rule: for multi‑part exams, each part must be at least 40% of the maximum score, and the total weighted score must be at least 5.5.
+
+### Resits
+- If a student fails, they have one resit opportunity in the same academic year (if available).
+
+### Exemptions (Vrijstellingen)
+- Apply to the Examination Board with proof of prior comparable study or relevant work experience.
+
+### Fraud and Plagiarism
+- Fraud includes cheating during exams, using unauthorized aids, impersonation, etc.
+- Plagiarism includes copying text without source attribution, submitting work of others as one’s own, etc.
+- Sanctions may include invalidation of the exam, exclusion from exams for up to three periods, or even permanent dismissal.
+
+### Cum Laude
+- **Propaedeuse**: obtained within one year, no more than 30 EC exemptions, average ≥8.0, all grades ≥7.0.
+- **Bachelor**: completed within four years (post‑propaedeuse within three years), no more than 30 EC exemptions, average ≥8.0, all grades ≥7.0, graduation project ≥8.0.
+
+---
+
+## Internship (Stage)
+
+### Duration & Timing
+- 20 weeks, full‑time (4 days per week, 32 hours) in the first semester of the fourth year.
+- Start possible in November or April.
+
+### Requirements
+- Propaedeuse obtained, all PP assignments completed, at least 94 EC from years 2 and 3.
+- No tuition fee arrears.
+
+### Internship Exemption
+- Students with at least three years of relevant work experience at HBO level may apply for exemption. They must submit a work report and a portfolio.
+
+### Supervision
+- Company mentor (at least HBO level, no family relation) and a UNASAT internship teacher.
+- Two company visits, interim and final assessment.
+
+### Deliverables
+- Internship plan (max 4 pages + COP).
+- Mid‑term report (15‑20 pages).
+- Final report (20‑25 pages).
+- Competence portfolio (COP) with evidence of six competencies.
+
+### Assessment
+- Internship: 2 EC (mid‑term) + 7 EC (final). Portfolio & development assessment: 9 EC.
+
+---
+
+## Graduation (Afstuderen)
+
+### Requirements
+- All programme components completed (including internship).
+- No tuition fee arrears.
+
+### Graduation Project
+- Individual research project resulting in a thesis (afstudeerverslag).
+- Supervision by a UNASAT teacher and, if applicable, a company mentor.
+
+### Assessment
+- Thesis and final presentation assessed by the graduation committee.
+- Final assessment (competences) during the graduation interview.
+- Total 30 EC for graduation phase.
+
+---
+
+## Personal Professionalization (PP)
+
+### Competencies
+Six competencies developed during the programme:
+1. Innovatief vermogen (Innovation)
+2. Ondernemend gedrag (Entrepreneurial behaviour)
+3. Besluitvaardigheid (Decisiveness)
+4. Samenwerken (Collaboration)
+5. Klantgerichtheid (Customer focus)
+6. Ontwikkelingsgerichtheid (Development orientation)
+
+### PP Trajectory
+- Spread over the entire programme.
+- Includes assignments (STARR reflections), portfolio building, and assessments.
+- Final PP component: 12 EC.
+
+---
+
+## Student Facilities
+
+### Trajectplanner
+- Student tracking system. Access only after full tuition payment.
+- Students can view their results and study progress.
+
+### OneDrive
+- All study materials and documents are stored here.
+- Accessible with UNASAT email account.
+
+### MS Teams
+- Used for online classes and collaboration.
+
+### Library
+- Students can register at the AdeKUS library.
+
+### Computer Facilities
+- Computer labs available during and outside class hours.
+- Usage rules apply (no food/drink, no unauthorized software, etc.).
+
+---
+
+## Rights and Duties of Students
+
+### Rights
+- Respectful treatment, privacy of personal data, clear information about education.
+- Right to inspect graded exams within 10 working days.
+- Right to feedback on assignments.
+- Right to be heard before disciplinary measures.
+
+### Duties
+- Adhere to the Statuut and OER.
+- Behave respectfully towards others.
+- Use the UNASAT email account for all communication.
+- Pay tuition on time.
+- Follow house rules (dress code, no smoking in buildings, mobile phones off during class, etc.).
+
+### House Rules (selection)
+- **Student card**: must be carried at all times.
+- **Dress code**: formal business attire (no shorts, sneakers, sandals, too casual clothing).
+- **No drugs** on campus.
+- **Computer use**: only for study purposes, no gaming, no pornographic/offensive content.
+- **Photography/filming** only with permission.
+
+### Disciplinary Measures
+- Violation of rules may lead to access denial (up to one year) or expulsion.
+
+---
+
+## Contact Information
+
+### Paramaribo Campus
+- Address: Hindilaan 1B, Paramaribo
+- Telephone: 430490 / 438718
+- Email: info@unasat.sr
+- Opening hours:
+  - Monday–Friday: 08:00 – 18:30
+  - Saturday: 08:00 – 10:30
+  - Closed on Sundays and public holidays.
+
+### Nickerie Location
+- Address: CCN‑gebouw, Walther Hewittstraat 1, Nieuw‑Nickerie
+- Contact person: G. Elias (g.elias@unasat.sr)
+
+### Important Email Addresses
+- Student administration: studentenadministratie@unasat.sr
+- Finance: finance@unasat.sr
+- Examination board: examencommissie@unasat.sr
+- Quality: quality@unasat.sr
+- SOME programme coordinator: someopleidingscoordinator@unasat.sr
+- SOI programme coordinator: ocsoi@unasat.sr
+- Grade administration: cijferadministratie@unasat.sr
+
+---
+
+*This knowledge base contains factual information about UNASAT. Last updated: February 2026.*

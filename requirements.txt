@@ -6,4 +6,6 @@ slowapi
 pymysql
 cryptography
 bcrypt
-langdetect==1.0.9
+langdetect
+python-jose[cryptography]
+passlib[bcrypt]
