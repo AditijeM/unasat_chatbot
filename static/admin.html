@@ -2,267 +2,941 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Monitoring & Gebruikersbeheer</title>
+    <title>Admin Dashboard – UNASAT</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 40px; background: #f4f7f6; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 800px; margin-bottom: 40px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #0056b3; }
-        h2 { margin-top: 40px; color: #333; }
-        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #0056b3; color: white; }
-        tr:hover { background: #f1f1f1; }
-        .feedback-good { color: green; font-weight: bold; }
-        .feedback-bad { color: red; font-weight: bold; }
-        .container { max-width: 1200px; margin: auto; }
+        :root {
+            --admin-primary: #1f2937;   /* dark slate */
+            --admin-accent: #2563eb;    /* professional blue */
+            --admin-bg: #f3f4f6;
+            --admin-card: #ffffff;
+            --admin-border: #e5e7eb;
+            --admin-text: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            line-height: 1.5;
+        }
+
+        button { cursor: pointer; }
+
+        /* Topbar */
+        .topbar {
+            background: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid var(--admin-border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--admin-primary);
+        }
+
+        .admin-user {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: white;
+            border-right: 1px solid var(--admin-border);
+            height: calc(100vh - 60px);
+            position: sticky;
+            top: 60px;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .nav-item:hover {
+            background: #f3f4f6;
+        }
+
+        .nav-item.active {
+            background: #eef2ff;
+            color: var(--admin-accent);
+            font-weight: 600;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px 30px;
+            max-width: calc(100% - 220px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: var(--admin-primary);
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: none;
+        }
+
+        .metric-title {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 600;
+            margin-top: 8px;
+            color: var(--admin-text);
+        }
+
+        .metric-value.loading {
+            opacity: 0.5;
+        }
+
+        /* Chart card */
+        .card canvas {
+            max-height: 300px;
+            width: 100% !important;
+        }
 
         /* Form styling */
-        .form-section { background: white; padding: 20px; border-radius: 10px; margin-bottom: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; }
-        input[type=text], input[type=password], input[type=number] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .btn { background: #0056b3; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn:hover { background: #003d82; }
-        .btn-secondary { background: #6c757d; }
-        .btn-secondary:hover { background: #545b62; }
-        .item-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-        .item-row input { flex: 1; }
-        .remove-btn { background: #dc3545; color: white; border: none; border-radius: 4px; padding: 8px 12px; cursor: pointer; }
-        .remove-btn:hover { background: #bd2130; }
-        .message { padding: 10px; margin-top: 10px; border-radius: 4px; display: none; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .form-section {
+            background: var(--admin-card);
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: var(--admin-primary);
+        }
+
+        input[type=text], input[type=password], input[type=number] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--admin-border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--admin-accent);
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--admin-accent);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .item-row input {
+            flex: 1;
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Collapsible */
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--admin-primary);
+            margin: 20px 0 10px;
+            display: inline-block;
+        }
+        .collapsible:hover {
+            color: var(--admin-accent);
+        }
+
+        /* Message */
+        .message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Table */
+        .logs-table-wrapper {
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .feedback-good {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .feedback-bad {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .btn-small {
+            background: #e5e7eb;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-small:hover {
+            background: #d1d5db;
+        }
+
+        /* Search */
+        .search-box {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-box input {
+            width: 300px;
+            padding: 8px 12px;
+            border: 1px solid var(--admin-border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--admin-primary);
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--admin-primary);
+            margin: 20px 0 10px;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content p {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 Admin Panel - Gebruikersbeheer & Monitoring</h1>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="logo">UNASAT Admin</div>
+        <div class="admin-user">System Administrator</div>
+    </div>
 
-        <!-- Formulier nieuwe gebruiker -->
-        <div class="form-section">
-            <h2>➕ Nieuwe student aanmaken</h2>
-            <form id="userForm">
-                <div class="form-group">
-                    <label>Gebruikersnaam:</label>
-                    <input type="text" id="username" required>
-                </div>
-                <div class="form-group">
-                    <label>Wachtwoord:</label>
-                    <input type="password" id="password" required>
-                </div>
-                <div class="form-group">
-                    <label>Volledige naam:</label>
-                    <input type="text" id="fullname" required>
-                </div>
+    <!-- Layout met sidebar -->
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="nav-item" data-section="stats">Dashboard</div>
+            <div class="nav-item" data-section="users">Gebruikers</div>
+            <div class="nav-item" data-section="monitoring">Monitoring</div> <!-- gewijzigd -->
+            <div class="nav-item" data-section="logs">Chatlogs</div>
+        </aside>
 
-                <h3>Cijfers</h3>
-                <div id="grades-container">
-                    <div class="item-row">
-                        <input type="text" placeholder="Module (bv. Databases)" class="grade-module">
-                        <input type="number" step="0.1" placeholder="Cijfer" class="grade-grade">
-                        <input type="number" placeholder="EC" class="grade-ec">
-                        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+        <div class="main-content">
+            <div class="page-title" id="pageTitle">Dashboard Overview</div>
+            <div class="container">
+                <!-- Gebruikersbeheer Sectie -->
+                <div class="section" id="section-users">
+                    <h2>➕ Nieuwe student aanmaken</h2>
+                    <div class="form-section">
+                        <form id="userForm">
+                            <div class="form-group">
+                                <label>Gebruikersnaam:</label>
+                                <input type="text" id="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Wachtwoord:</label>
+                                <input type="password" id="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Volledige naam:</label>
+                                <input type="text" id="fullname" required>
+                            </div>
+
+                            <!-- Cijfers collapsible -->
+                            <span class="collapsible" onclick="toggleSection('gradesSection')">📘 Cijfers ▼</span>
+                            <div id="gradesSection">
+                                <div id="grades-container">
+                                    <div class="item-row">
+                                        <input type="text" placeholder="Module (bv. Databases)" class="grade-module">
+                                        <input type="number" step="0.1" placeholder="Cijfer" class="grade-grade">
+                                        <input type="number" placeholder="EC" class="grade-ec">
+                                        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="addGradeRow()">➕ Cijfer toevoegen</button>
+                            </div>
+
+                            <!-- Rooster collapsible -->
+                            <span class="collapsible" onclick="toggleSection('scheduleSection')">📅 Rooster ▼</span>
+                            <div id="scheduleSection">
+                                <div id="schedule-container">
+                                    <div class="item-row">
+                                        <input type="text" placeholder="Module" class="schedule-module">
+                                        <input type="text" placeholder="Dag (bv. Maandag)" class="schedule-day">
+                                        <input type="text" placeholder="Tijd (bv. 14:00u)" class="schedule-time">
+                                        <input type="text" placeholder="Lokaal" class="schedule-room">
+                                        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="addScheduleRow()">➕ Roosteritem toevoegen</button>
+                            </div>
+
+                            <div style="margin-top: 30px;">
+                                <button type="submit" class="btn">Gebruiker aanmaken</button>
+                            </div>
+                            <div id="formMessage" class="message"></div>
+                        </form>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="addGradeRow()">➕ Cijfer toevoegen</button>
 
-                <h3>Rooster</h3>
-                <div id="schedule-container">
-                    <div class="item-row">
-                        <input type="text" placeholder="Module" class="schedule-module">
-                        <input type="text" placeholder="Dag (bv. Maandag)" class="schedule-day">
-                        <input type="text" placeholder="Tijd (bv. 14:00u)" class="schedule-time">
-                        <input type="text" placeholder="Lokaal" class="schedule-room">
-                        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                <!-- Monitoring Sectie (zelfde stats als dashboard) -->
+                <div class="section" id="section-stats">
+                    <h2>📈 Statistieken</h2>
+                    <div class="stats-grid">
+                        <!-- Status Cards -->
+                        <div class="card">
+                            <div class="metric-title">System Status</div>
+                            <div class="metric-value">🟢 Operational</div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-title">AI Service</div>
+                            <div class="metric-value">Online</div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-title">Totaal Chats</div>
+                            <div class="metric-value" id="t">...</div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-title">Gem. Vertraging</div>
+                            <div class="metric-value" id="l">...</div>
+                        </div>
+                        <div class="card" style="grid-column: span 2;">
+                            <canvas id="chart"></canvas>
+                        </div>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="addScheduleRow()">➕ Roosteritem toevoegen</button>
 
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="btn">Gebruiker aanmaken</button>
+                <!-- Logs Sectie -->
+                <div class="section" id="section-logs">
+                    <h2>📋 Alle chatlogs</h2>
+                    <!-- Zoekbalk -->
+                    <div class="search-box">
+                        <input type="text" id="logSearch" placeholder="Zoek op gebruiker of vraag...">
+                    </div>
+                    <div class="logs-table-wrapper">
+                        <table id="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Gebruiker</th>
+                                    <th>Vraag</th>
+                                    <th>Antwoord (verkort)</th>
+                                    <th>Latency</th>
+                                    <th>Feedback</th>
+                                    <th>Tijdstip</th>
+                                    <th>Actie</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div id="formMessage" class="message"></div>
-            </form>
-        </div>
-
-        <!-- Statistieken (bestaand) -->
-        <h2>📈 Statistieken</h2>
-        <div class="stats-grid">
-            <div class="card"><h3>Totaal Chats</h3><div id="t" style="font-size:30px;">0</div></div>
-            <div class="card"><h3>Gem. Vertraging</h3><div id="l" style="font-size:30px;">0s</div></div>
-            <div class="card" style="grid-column: span 2;">
-                <canvas id="chart"></canvas>
             </div>
         </div>
+    </div>
 
-        <h2>📋 Alle chatlogs</h2>
-        <div style="overflow-x: auto;">
-            <table id="logs-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Gebruiker</th>
-                        <th>Vraag</th>
-                        <th>Antwoord (verkort)</th>
-                        <th>Latency</th>
-                        <th>Feedback</th>
-                        <th>Tijdstip</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>Volledig AI antwoord</h3>
+            <p id="modalText"></p>
+            <button class="btn" onclick="closeModal()">Sluiten</button>
         </div>
     </div>
 
     <script>
-        // Dynamische rijen voor cijfers en rooster
-        function addGradeRow() {
-            const container = document.getElementById('grades-container');
-            const div = document.createElement('div');
-            div.className = 'item-row';
-            div.innerHTML = `
-                <input type="text" placeholder="Module" class="grade-module">
-                <input type="number" step="0.1" placeholder="Cijfer" class="grade-grade">
-                <input type="number" placeholder="EC" class="grade-ec">
-                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
-            `;
-            container.appendChild(div);
-        }
-
-        function addScheduleRow() {
-            const container = document.getElementById('schedule-container');
-            const div = document.createElement('div');
-            div.className = 'item-row';
-            div.innerHTML = `
-                <input type="text" placeholder="Module" class="schedule-module">
-                <input type="text" placeholder="Dag" class="schedule-day">
-                <input type="text" placeholder="Tijd" class="schedule-time">
-                <input type="text" placeholder="Lokaal" class="schedule-room">
-                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
-            `;
-            container.appendChild(div);
-        }
-
-        // Form submit
-        document.getElementById('userForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            // Verzamel cijfers
-            const gradeRows = document.querySelectorAll('#grades-container .item-row');
-            const grades = [];
-            gradeRows.forEach(row => {
-                const module = row.querySelector('.grade-module').value;
-                const grade = row.querySelector('.grade-grade').value;
-                const ec = row.querySelector('.grade-ec').value;
-                if (module && grade && ec) {
-                    grades.push({ module, grade: parseFloat(grade), ec: parseInt(ec) });
-                }
-            });
-
-            // Verzamel rooster
-            const scheduleRows = document.querySelectorAll('#schedule-container .item-row');
-            const schedule = [];
-            scheduleRows.forEach(row => {
-                const module = row.querySelector('.schedule-module').value;
-                const day = row.querySelector('.schedule-day').value;
-                const time = row.querySelector('.schedule-time').value;
-                const room = row.querySelector('.schedule-room').value;
-                if (module && day && time && room) {
-                    schedule.push({ module, day, time, room });
-                }
-            });
-
-            const payload = {
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value,
-                full_name: document.getElementById('fullname').value,
-                grades: grades,
-                schedule: schedule
+        (function() {
+            // ------------------ GLOBALE VARIABELEN ------------------
+            let userActive = false;
+            let chart = null;
+            let refreshInterval; // voor later cleanup
+            const pageTitleEl = document.getElementById('pageTitle');
+            const sectionMap = {
+                stats: 'section-stats',
+                users: 'section-users',
+                monitoring: 'section-stats', // monitoring toont dezelfde stats
+                logs: 'section-logs'
             };
 
-            try {
-                const res = await fetch('/admin/create-user', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
+            // ------------------ INIT FUNCTIE ------------------
+            function init() {
+                // Eerst controleren of de gebruiker is ingelogd (via protected endpoint)
+                checkAdmin();
+
+                // Sidebar navigatie via data-section
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+
+                        const section = this.getAttribute('data-section');
+                        if (section) {
+                            // Alle secties verbergen
+                            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+                            // Gewenste sectie tonen
+                            const targetId = sectionMap[section];
+                            if (targetId) {
+                                document.getElementById(targetId).style.display = 'block';
+                                // Page title aanpassen
+                                const titles = {
+                                    stats: 'Dashboard & Statistieken',
+                                    users: 'Gebruikersbeheer',
+                                    monitoring: 'Monitoring',
+                                    logs: 'Chatlogs'
+                                };
+                                pageTitleEl.innerText = titles[section] || 'Admin Dashboard';
+                            }
+                        }
+                    });
                 });
-                const data = await res.json();
-                const msgDiv = document.getElementById('formMessage');
-                if (res.ok) {
-                    msgDiv.className = 'message success';
-                    msgDiv.innerText = '✅ Gebruiker aangemaakt!';
-                    msgDiv.style.display = 'block';
-                    document.getElementById('userForm').reset();
-                    // Leeg de dynamische rijen (behalve de eerste lege)
-                    document.getElementById('grades-container').innerHTML = '<div class="item-row"> ... </div>'; // herstel een lege rij
-                    document.getElementById('schedule-container').innerHTML = '<div class="item-row"> ... </div>';
-                    // Voeg de eerste lege rij weer toe
-                    addGradeRow();
-                    addScheduleRow();
-                } else {
-                    msgDiv.className = 'message error';
-                    msgDiv.innerText = '❌ Fout: ' + data.detail;
-                    msgDiv.style.display = 'block';
-                }
-            } catch (err) {
-                const msgDiv = document.getElementById('formMessage');
-                msgDiv.className = 'message error';
-                msgDiv.innerText = '❌ Fout bij verzenden: ' + err.message;
-                msgDiv.style.display = 'block';
+
+                // Standaard: stats sectie tonen
+                document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+                document.getElementById('section-stats').style.display = 'block';
+                // Sidebar item "Dashboard" active maken
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.getAttribute('data-section') === 'stats') {
+                        item.classList.add('active');
+                    }
+                });
+                pageTitleEl.innerText = 'Dashboard & Statistieken';
+
+                // Collapsibles open bij start
+                document.getElementById('gradesSection').style.display = 'block';
+                document.getElementById('scheduleSection').style.display = 'block';
+
+                // Zorg voor lege rijen
+                if (document.querySelectorAll('#grades-container .item-row').length === 0) addGradeRow();
+                if (document.querySelectorAll('#schedule-container .item-row').length === 0) addScheduleRow();
+
+                // Laad data
+                loadStats();
+                loadLogs();
+
+                // User activity detectie voor slimme refresh
+                document.addEventListener('mousemove', () => userActive = true);
+                document.addEventListener('keydown', () => userActive = true);
+
+                refreshInterval = setInterval(() => {
+                    if (!userActive) {
+                        loadStats();
+                        loadLogs();
+                    }
+                    userActive = false; // reset
+                }, 10000);
+
+                // Escape toets sluit modal
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                    }
+                });
             }
-        });
 
-        // Bestaande statistiek- en logfuncties (ongewijzigd)
-        async function loadStats() {
-            const res = await fetch('/stats');
-            const d = await res.json();
-            document.getElementById('t').innerText = d.total;
-            document.getElementById('l').innerText = d.latency + "s";
+            // Controleer of de gebruiker is ingelogd (via protected endpoint)
+            async function checkAdmin() {
+                try {
+                    const res = await fetch('/admin/check', { credentials: 'include' });
+                    if (!res.ok) {
+                        window.location.href = '/';
+                    }
+                } catch (e) {
+                    window.location.href = '/';
+                }
+            }
 
-            new Chart(document.getElementById('chart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Positief 👍', 'Negatief 👎'],
-                    datasets: [{ label: 'Feedback', data: [d.good, d.bad], backgroundColor: ['#28a745', '#dc3545'] }]
+            // ------------------ START INIT BIJ DOM READY ------------------
+            document.addEventListener('DOMContentLoaded', init);
+
+            // ------------------ COLLAPSIBLE SECTIONS ------------------
+            window.toggleSection = function(id) {
+                const el = document.getElementById(id);
+                el.style.display = el.style.display === 'none' ? 'block' : 'none';
+            };
+
+            // ------------------ DYNAMISCHE RIJEN ------------------
+            window.addGradeRow = function() {
+                const container = document.getElementById('grades-container');
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.innerHTML = `
+                    <input type="text" placeholder="Module" class="grade-module">
+                    <input type="number" step="0.1" placeholder="Cijfer" class="grade-grade">
+                    <input type="number" placeholder="EC" class="grade-ec">
+                    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                `;
+                container.appendChild(div);
+            };
+
+            window.addScheduleRow = function() {
+                const container = document.getElementById('schedule-container');
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.innerHTML = `
+                    <input type="text" placeholder="Module" class="schedule-module">
+                    <input type="text" placeholder="Dag" class="schedule-day">
+                    <input type="text" placeholder="Tijd" class="schedule-time">
+                    <input type="text" placeholder="Lokaal" class="schedule-room">
+                    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">🗑️</button>
+                `;
+                container.appendChild(div);
+            };
+
+            // ------------------ CONFIRMATIE EN VALIDATIE BIJ AANMAKEN ------------------
+            document.getElementById('userForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                if (!confirm("Weet je zeker dat je deze gebruiker wilt aanmaken?")) {
+                    return;
+                }
+
+                // Valideer cijfers
+                const gradeRows = document.querySelectorAll('#grades-container .item-row');
+                for (let row of gradeRows) {
+                    const module = row.querySelector('.grade-module').value.trim();
+                    const grade = row.querySelector('.grade-grade').value;
+                    const ec = row.querySelector('.grade-ec').value;
+
+                    if (!module) {
+                        alert("Module mag niet leeg zijn bij een cijfer.");
+                        return;
+                    }
+                    if (grade === '') {
+                        alert("Cijfer mag niet leeg zijn.");
+                        return;
+                    }
+                    const g = parseFloat(grade);
+                    if (isNaN(g) || g < 0 || g > 10) {
+                        alert("Cijfer moet tussen 0 en 10 liggen.");
+                        return;
+                    }
+                    if (ec === '') {
+                        alert("EC mag niet leeg zijn.");
+                        return;
+                    }
+                    const e = parseInt(ec);
+                    if (isNaN(e) || e < 0) {
+                        alert("EC moet een positief getal zijn.");
+                        return;
+                    }
+                }
+
+                // Valideer rooster
+                const scheduleRows = document.querySelectorAll('#schedule-container .item-row');
+                for (let row of scheduleRows) {
+                    const module = row.querySelector('.schedule-module').value.trim();
+                    const day = row.querySelector('.schedule-day').value.trim();
+                    const time = row.querySelector('.schedule-time').value.trim();
+                    const room = row.querySelector('.schedule-room').value.trim();
+                    if (module && (!day || !time || !room)) {
+                        alert("Vul alle velden van het roosteritem in, of verwijder de lege rij.");
+                        return;
+                    }
+                }
+
+                // Verzamel cijfers
+                const grades = [];
+                gradeRows.forEach(row => {
+                    const module = row.querySelector('.grade-module').value;
+                    const grade = row.querySelector('.grade-grade').value;
+                    const ec = row.querySelector('.grade-ec').value;
+                    if (module && grade && ec) {
+                        grades.push({ module, grade: parseFloat(grade), ec: parseInt(ec) });
+                    }
+                });
+
+                // Verzamel rooster
+                const schedule = [];
+                scheduleRows.forEach(row => {
+                    const module = row.querySelector('.schedule-module').value;
+                    const day = row.querySelector('.schedule-day').value;
+                    const time = row.querySelector('.schedule-time').value;
+                    const room = row.querySelector('.schedule-room').value;
+                    if (module && day && time && room) {
+                        schedule.push({ module, day, time, room });
+                    }
+                });
+
+                const payload = {
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                    full_name: document.getElementById('fullname').value,
+                    grades: grades,
+                    schedule: schedule
+                };
+
+                try {
+                    const res = await fetch('/admin/create-user', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    const msgDiv = document.getElementById('formMessage');
+                    if (res.ok) {
+                        msgDiv.className = 'message success';
+                        msgDiv.innerText = '✅ Gebruiker aangemaakt!';
+                        msgDiv.style.display = 'block';
+                        document.getElementById('userForm').reset();
+
+                        // Leeg containers en voeg één lege rij toe
+                        document.getElementById('grades-container').innerHTML = '';
+                        document.getElementById('schedule-container').innerHTML = '';
+                        addGradeRow();
+                        addScheduleRow();
+
+                        setTimeout(() => {
+                            msgDiv.style.display = 'none';
+                        }, 5000);
+                    } else {
+                        msgDiv.className = 'message error';
+                        msgDiv.innerText = '❌ Fout: ' + (data.detail || 'Onbekende fout');
+                        msgDiv.style.display = 'block';
+                    }
+                } catch (err) {
+                    const msgDiv = document.getElementById('formMessage');
+                    msgDiv.className = 'message error';
+                    msgDiv.innerText = '❌ Fout bij verzenden: ' + err.message;
+                    msgDiv.style.display = 'block';
                 }
             });
-        }
 
-        async function loadLogs() {
-            const res = await fetch('/logs');
-            const logs = await res.json();
-            const tbody = document.querySelector('#logs-table tbody');
-            tbody.innerHTML = '';
-            logs.forEach(log => {
-                const row = tbody.insertRow();
-                row.insertCell().textContent = log.id || '-';
-                row.insertCell().textContent = log.username || 'onbekend';
-                row.insertCell().textContent = log.user_input || '';
-                const shortReply = log.bot_reply ? (log.bot_reply.length > 100 ? log.bot_reply.substring(0,100) + '…' : log.bot_reply) : '';
-                row.insertCell().textContent = shortReply;
-                row.insertCell().textContent = (log.latency ? log.latency + 's' : '-');
-                const feedbackCell = row.insertCell();
-                if (log.feedback === 'good') {
-                    feedbackCell.innerHTML = '<span class="feedback-good">👍 Positief</span>';
-                } else if (log.feedback === 'bad') {
-                    feedbackCell.innerHTML = '<span class="feedback-bad">👎 Negatief</span>';
-                } else {
-                    feedbackCell.textContent = '-';
+            // ------------------ STATISTIEKEN LADEN ------------------
+            async function loadStats() {
+                // Loading states
+                document.getElementById('t').innerText = '...';
+                document.getElementById('l').innerText = '...';
+                document.getElementById('t').classList.add('loading');
+                document.getElementById('l').classList.add('loading');
+
+                try {
+                    const res = await fetch('/stats');
+                    if (!res.ok) {
+                        if (res.status === 401) {
+                            window.location.href = '/';
+                            return;
+                        }
+                        throw new Error(`HTTP error ${res.status}`);
+                    }
+                    const d = await res.json();
+                    document.getElementById('t').innerText = d.total;
+                    document.getElementById('l').innerText = d.latency + "s";
+                    document.getElementById('t').classList.remove('loading');
+                    document.getElementById('l').classList.remove('loading');
+
+                    // Update chart (ipv recreate)
+                    if (chart) {
+                        chart.data.datasets[0].data = [d.good, d.bad];
+                        chart.update();
+                    } else {
+                        // Initialiseer chart
+                        const ctx = document.getElementById('chart').getContext('2d');
+                        chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Positief 👍', 'Negatief 👎'],
+                                datasets: [{
+                                    label: 'Feedback',
+                                    data: [d.good, d.bad],
+                                    backgroundColor: ['#059669', '#dc2626']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    y: {
+                                        grid: { color: "#e5e7eb" }
+                                    },
+                                    x: {
+                                        grid: { display: false }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Fout bij laden stats:', e);
+                    document.getElementById('t').innerText = 'Fout';
+                    document.getElementById('l').innerText = 'Fout';
+                    document.getElementById('t').classList.remove('loading');
+                    document.getElementById('l').classList.remove('loading');
                 }
-                row.insertCell().textContent = log.timestamp ? new Date(log.timestamp).toLocaleString() : '-';
+            }
+
+            // ------------------ LOGS LADEN ------------------
+            async function loadLogs() {
+                try {
+                    const res = await fetch('/logs');
+                    if (!res.ok) {
+                        if (res.status === 401) {
+                            window.location.href = '/';
+                            return;
+                        }
+                        throw new Error(`HTTP error ${res.status}`);
+                    }
+                    const logs = await res.json();
+                    const tbody = document.querySelector('#logs-table tbody');
+                    if (logs.length === 0) {
+                        // Empty state
+                        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:#6b7280;">Geen chatlogs beschikbaar</td></tr>`;
+                        return;
+                    }
+                    tbody.innerHTML = '';
+                    logs.forEach(log => {
+                        const row = tbody.insertRow();
+                        row.insertCell().textContent = log.id || '-';
+                        row.insertCell().textContent = log.username || 'onbekend';
+                        row.insertCell().textContent = log.user_input || '';
+                        const shortReply = log.bot_reply ? (log.bot_reply.length > 100 ? log.bot_reply.substring(0,100) + '…' : log.bot_reply) : '';
+                        row.insertCell().textContent = shortReply;
+                        
+                        // Latency met kleurcodering (null-safe)
+                        const lat = log.latency ?? 0;
+                        const latencyCell = row.insertCell();
+                        if (lat < 1) {
+                            latencyCell.innerHTML = `<span style="color:#059669">${lat}s</span>`;
+                        } else if (lat < 3) {
+                            latencyCell.innerHTML = `<span style="color:#d97706">${lat}s</span>`;
+                        } else {
+                            latencyCell.innerHTML = `<span style="color:#dc2626">${lat}s</span>`;
+                        }
+
+                        const feedbackCell = row.insertCell();
+                        if (log.feedback === 'good') {
+                            feedbackCell.innerHTML = '<span class="feedback-good">👍 Positief</span>';
+                        } else if (log.feedback === 'bad') {
+                            feedbackCell.innerHTML = '<span class="feedback-bad">👎 Negatief</span>';
+                        } else {
+                            feedbackCell.textContent = '-';
+                        }
+                        row.insertCell().textContent = log.timestamp ? new Date(log.timestamp).toLocaleString() : '-';
+                        
+                        // Actiekolom met modal
+                        const actionCell = row.insertCell();
+                        const btn = document.createElement('button');
+                        btn.className = 'btn-small';
+                        btn.textContent = 'Bekijk';
+                        btn.onclick = () => openModal(log.bot_reply || 'Geen antwoord');
+                        actionCell.appendChild(btn);
+                    });
+
+                    // Na laden logs, filter toepassen
+                    applySearchFilter();
+                } catch (e) {
+                    console.error('Fout bij laden logs:', e);
+                }
+            }
+
+            // ------------------ MODAL ------------------
+            window.openModal = function(text) {
+                document.getElementById('modalText').innerText = text;
+                document.getElementById('modal').style.display = 'flex';
+            };
+
+            window.closeModal = function() {
+                document.getElementById('modal').style.display = 'none';
+            };
+
+            // ------------------ ZOEKFILTER MET DEBOUNCE ------------------
+            let searchTimeout;
+            function applySearchFilter() {
+                const term = document.getElementById('logSearch').value.toLowerCase();
+                const rows = document.querySelectorAll('#logs-table tbody tr');
+                rows.forEach(row => {
+                    row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none';
+                });
+            }
+
+            document.getElementById('logSearch').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(applySearchFilter, 200);
             });
-        }
-
-        loadStats();
-        loadLogs();
-
-        // Init: zorg voor minimaal één lege rij in cijfers en rooster
-        window.onload = function() {
-            if (document.querySelectorAll('#grades-container .item-row').length === 0) addGradeRow();
-            if (document.querySelectorAll('#schedule-container .item-row').length === 0) addScheduleRow();
-        };
+        })();
     </script>
 </body>
 </html>

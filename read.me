@@ -1,0 +1,47 @@
+1. Stappenplan voor lokale deployment
+Volg onderstaande stappen om het systeem op een lokale machine of server te implementeren.
+2 Repository clonen
+Open een terminal en voer uit:
+bash
+git clone <repository-url>
+cd UNASAT_CHATBOT
+Vervang <repository-url> door de daadwerkelijke URL (bijv. van GitHub).
+3. Configuratiebestand aanmaken
+Maak een bestand .env in de hoofdmap en vul de volgende variabelen in:
+ini
+GROQ_API_KEY=gsk_jouw_groq_api_key
+JWT_SECRET=een_zeer_lang_geheim_wachtwoord_van_minstens_32_tekens
+JWT_ALGORITHM=HS256
+•	GROQ_API_KEY: verkrijgbaar via de Groq console.
+•	JWT_SECRET: kies een willekeurige, lange string (minimaal 32 tekens). Gebruik bijv. een wachtwoordgenerator.
+4. Controleer Docker en Docker Compose
+Controleer of Docker correct is geïnstalleerd:
+bash
+docker --version
+docker-compose --version
+Beide commando's moeten een versienummer tonen zonder foutmeldingen.
+5. Start de containers
+Voer het volgende commando uit in de projectmap:
+bash
+docker-compose up --build
+•	--build zorgt dat de Docker-image voor de app opnieuw wordt gebouwd (bij de eerste keer of na wijzigingen).
+•	Bij een volgende start zonder wijzigingen kun je docker-compose up gebruiken (zonder --build).
+De eerste keer kan het enkele minuten duren omdat Docker de benodigde images (Python, MySQL) downloadt en de Python-pakketten installeert.
+6. Controleer of alles draait
+Na het starten zie je logs van beide containers. Open een browser en ga naar:
+text
+http://localhost:8000
+De loginpagina van de studentenportal verschijnt. Log in met de testgebruiker:
+•	Gebruikersnaam: student1
+•	Wachtwoord: unasat123
+Deze gebruiker is automatisch aangemaakt bij de eerste database-initialisatie.
+7. (Optioneel) Achtergrondmodus
+Om de containers op de achtergrond te laten draaien, voeg -d toe:
+bash
+docker-compose up -d
+8. Stoppen van de containers
+Druk Ctrl+C in de terminal waar de containers op de voorgrond draaien, of voer in een andere terminal uit:
+bash
+docker-compose down
+Dit stopt en verwijdert de containers, maar laat het databasevolume intact (data blijft bewaard).
+
