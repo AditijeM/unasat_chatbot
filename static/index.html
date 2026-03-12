@@ -7,13 +7,16 @@
     <!-- Beveiliging: Markdown parser + XSS sanitizer -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <!-- Font Awesome voor iconen en spinner -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root { 
             --unasat-blue: #003366; 
             --unasat-orange: #e67e22;
-            --sidebar-width: 260px;
+            --sidebar-width: 280px;
             --bg-light: #f4f7f9;
-            --glass: rgba(255, 255, 255, 0.95);
+            --glass-bg: #00264d;
+            --glass-border: rgba(255, 255, 255, 0.15);
             --skeleton-bg: #e0e0e0;
         }
         
@@ -60,7 +63,7 @@
         }
 
         .login-card { 
-            background: var(--glass); padding: 45px; border-radius: 15px; width: 360px; text-align: center; 
+            background: rgba(255, 255, 255, 0.95); padding: 45px; border-radius: 15px; width: 360px; text-align: center; 
             backdrop-filter: blur(10px); box-shadow: 0 25px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);
             max-width: 90%;
         }
@@ -73,6 +76,7 @@
         .login-card button { 
             width: 100%; padding: 14px; background: var(--unasat-blue); color: white; border: none; 
             border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 15px; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .login-card button:hover { background: var(--unasat-orange); transform: translateY(-2px); }
         .login-card button:disabled {
@@ -81,29 +85,99 @@
             transform: none;
         }
 
-        /* --- PORTAL STRUCTUUR --- */
+        /* --- PORTAL STRUCTUUR (GLASS SIDEBAR) --- */
         #portal { display: none; width: 100%; height: 100%; position: relative; }
         
+        /* GLASS SIDEBAR */
         nav { 
             width: var(--sidebar-width); 
-            background: var(--unasat-blue); 
+            background: var(--glass-bg);
+            border-right: 1px solid var(--glass-border);
             color: white; 
             display: flex; 
             flex-direction: column; 
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
             transition: left 0.3s ease;
             height: 100%;
             overflow-y: auto;
         }
-        .nav-header { padding: 40px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-header img { width: 90px; }
-        
-        .nav-links { flex: 1; padding: 30px 0; }
-        .nav-item { 
-            padding: 16px 25px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; 
-            gap: 12px; opacity: 0.7; font-weight: 500;
+        .nav-header { 
+            padding: 30px 20px 20px 20px; 
+            text-align: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.15);
         }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); opacity: 1; border-left: 5px solid var(--unasat-orange); }
+        .nav-header img { width: 90px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+        
+        /* Profiel sectie in sidebar */
+        .profile-section {
+            padding: 20px;
+            background: rgba(255,255,255,0.08);
+            margin: 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .avatar {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 15px auto;
+            border: 2px solid rgba(255,255,255,0.4);
+            color: white;
+        }
+        .greeting {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            color: white;
+        }
+        .date {
+            font-size: 1rem;
+            text-align: center;
+            opacity: 0.9;
+            margin-top: 5px;
+            font-weight: 300;
+            color: white;
+        }
+        
+        .sidebar-divider {
+            height: 1px;
+            margin: 10px 20px 15px 20px;
+            background: rgba(255,255,255,0.12);
+        }
+
+        .nav-links { flex: 1; padding: 10px 0; }
+        .nav-item { 
+            padding: 16px 25px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            opacity: 0.8; 
+            font-weight: 500;
+            color: white;
+            border-radius: 30px 0 0 30px;
+            margin: 4px 0 4px 10px;
+        }
+        .nav-item:hover { 
+            background: rgba(255,255,255,0.2); 
+            opacity: 1; 
+        }
+        .nav-item.active { 
+            background: rgba(255,255,255,0.12);
+            color: white; 
+            opacity: 1; 
+            box-shadow: -5px 5px 15px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--unasat-orange);
+        }
 
         main { 
             flex: 1; 
@@ -122,9 +196,114 @@
             border-bottom: 1px solid #e1e8ed;
         }
         
+        /* Header buttons */
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .admin-btn {
+            background: var(--unasat-blue);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .logout-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .admin-btn:hover { background: #002244; }
+        .logout-btn:hover { background: #b71c1c; }
+        
         .container { padding: 40px 50px; max-width: 1100px; }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #dee5e9; padding-bottom: 10px; flex-wrap: wrap; }
         .section-title { font-size: 26px; color: var(--unasat-blue); font-weight: 700; margin: 0; }
+
+        /* Nieuwe kaarten voor dashboard */
+        .dashboard-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .info-card {
+            flex: 1 1 250px;
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+            border: 1px solid #eaeef2;
+            transition: transform 0.2s;
+        }
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .grade-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .grade-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #edf2f5;
+        }
+        .grade-list li:last-child {
+            border-bottom: none;
+        }
+        .grade-subject {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .grade-value {
+            background: var(--unasat-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+        }
+        .next-lesson-block {
+            text-align: center;
+        }
+        .next-lesson-time {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--unasat-blue);
+            line-height: 1.2;
+        }
+        .next-lesson-details {
+            color: #5a6d7e;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        .next-lesson-room {
+            background: #f0f3f6;
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 40px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
 
         .transcript-card { background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; padding: 20px; overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
@@ -144,7 +323,6 @@
         }
         .chat-head { background: var(--unasat-blue); color: white; padding: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Tabellen in chatberichten */
         #chat-content table {
             width: 100%;
             border-collapse: collapse;
@@ -228,6 +406,12 @@
             50% { opacity: 1; }
             100% { opacity: 0.6; }
         }
+        .skeleton-card {
+            height: 120px;
+            background: #f0f0f0;
+            border-radius: 16px;
+            animation: pulse 1.5s infinite;
+        }
 
         /* --- RESPONSIVE DESIGN --- */
         @media (max-width: 768px) {
@@ -239,11 +423,11 @@
             }
             nav {
                 position: fixed;
-                left: -260px;
+                left: -280px;
                 top: 0;
                 bottom: 0;
                 z-index: 1001;
-                width: 260px;
+                width: 280px;
             }
             nav.active {
                 left: 0;
@@ -253,7 +437,7 @@
                 margin-left: 0;
             }
             header {
-                padding: 15px 20px 15px 70px; /* ruimte voor hamburger */
+                padding: 15px 20px 15px 70px;
             }
             .container {
                 padding: 20px 15px;
@@ -280,6 +464,9 @@
                 padding: 30px 20px;
                 width: 90%;
             }
+            .dashboard-cards {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -301,7 +488,15 @@
         <nav>
             <div class="nav-header">
                 <img src="/static/logo.png" alt="UNASAT">
-                <div style="font-size: 11px; margin-top:15px; letter-spacing: 2px; opacity: 0.6;">STUDENT SIS v2.0</div>
+                <div style="font-size: 11px; margin-top:15px; letter-spacing: 2px; opacity: 0.8;">STUDENT SIS v2.0</div>
+            </div>
+            <!-- Profielsectie met begroeting en datum -->
+            <div class="profile-section" id="profileSection">
+                <div class="avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="greeting" id="greeting">Goedemiddag, </div>
+                <div class="date" id="currentDate"></div>
             </div>
             <div class="nav-links">
                 <div class="nav-item active" onclick="switchTab(this, 'dash')">📊 Dashboard</div>
@@ -314,7 +509,11 @@
         <main>
             <header>
                 <div style="color: #7f8c8d; font-size: 14px;">Bachelor of Science: <strong>Software Engineering</strong></div>
-                <div id="user-name" style="color: var(--unasat-blue); font-weight: 700; font-size: 16px;">Welkom...</div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div id="user-name" style="color: var(--unasat-blue); font-weight: 700; font-size: 16px;">Welkom...</div>
+                    <button id="adminBtn" class="admin-btn" onclick="openAdmin()" style="display: none;">Admin</button>
+                    <button class="logout-btn" onclick="logout()">Uitloggen</button>
+                </div>
             </header>
 
             <div class="container">
@@ -322,11 +521,26 @@
                 <section id="dash" class="tab-content active">
                     <div class="section-header">
                         <h2 class="section-title">Academisch Overzicht</h2>
-                        <div style="font-size: 14px; color: #7f8c8d;">Kwartaal 3, 2026</div>
                     </div>
+                    <!-- Cards voor recente cijfers en volgende les -->
+                    <div class="dashboard-cards">
+                        <div class="info-card" id="recentGradesCard">
+                            <div class="card-title"><i class="fas fa-star"></i> Recente cijfers</div>
+                            <div id="recentGradesContent">
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </div>
+                        <div class="info-card" id="nextLessonCard">
+                            <div class="card-title"><i class="fas fa-calendar-check"></i> Volgende les</div>
+                            <div id="nextLessonContent">
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Originele aankondiging -->
                     <div style="background: white; padding: 25px; border-radius: 12px; border-left: 6px solid var(--unasat-orange); box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                        <h4 style="margin: 0 0 10px 0; color: var(--unasat-blue);">Belangrijk: Examenregistratie</h4>
-                        <p style="margin: 0; color: #555; font-size: 14.5px;">De registratie voor de herkansingen van Kwartaal 2 sluit aanstaande vrijdag om 23:59u. Zorg dat je tijdig bent ingeschreven via het SIS.</p>
+                        <h4 style="margin: 0 0 10px 0; color: var(--unasat-blue);">Belangrijk: Tentamenregistratie</h4>
+                        <p style="margin: 0; color: #555; font-size: 14.5px;">De inschrijfperiode voor tentamens is geopend. Registreer via het Student Informatie Systeem (SIS) om je aan te melden.</p>
                     </div>
                 </section>
 
@@ -335,9 +549,7 @@
                     <div class="section-header">
                         <h2 class="section-title">Mijn Resultaten</h2>
                     </div>
-                    <div class="transcript-card" id="grades-container">
-                        <!-- Skeletons worden hier getoond tijdens laden -->
-                    </div>
+                    <div class="transcript-card" id="grades-container"></div>
                 </section>
 
                 <!-- Rooster Tab -->
@@ -345,9 +557,7 @@
                     <div class="section-header">
                         <h2 class="section-title">Mijn Lesrooster</h2>
                     </div>
-                    <div class="transcript-card" id="rooster-container">
-                        <!-- Skeletons hier tijdens laden -->
-                    </div>
+                    <div class="transcript-card" id="rooster-container"></div>
                 </section>
 
                 <!-- Mijn gesprekken Tab -->
@@ -380,7 +590,7 @@
                 <button onclick="quickAsk('Ik wil studieadvies')">🎓 Studieadvies</button>
             </div>
             <div class="chat-input-area">
-                <input type="text" id="msg-in" placeholder="Stel je vraag over cijfers of roosters..." onkeypress="if(event.key==='Enter') send()">
+                <input type="text" id="msg-in" placeholder="Stel je vraag over cijfers of roosters..." onkeydown="if(event.key==='Enter'){event.preventDefault(); send();}">
             </div>
         </div>
     </div>
@@ -412,22 +622,156 @@
         if (tabId === 'grades') fetchGrades();
         if (tabId === 'rooster') fetchSchedule();
         if (tabId === 'mylogs') fetchMyLogs();
+        if (tabId === 'dash') {
+            loadRecentGrades();
+            loadNextLesson();
+        }
 
-        // Op mobiel: sluit sidebar na klik
         if (window.innerWidth <= 768) {
             document.querySelector('nav').classList.remove('active');
         }
     }
 
-    // --- SKELETON HELPERS ---
+    // --- Functie om chatberichten te beperken (telt alleen .m-row) ---
+function limitChatMessages(maxMessages = 80) {
+    const chatContent = document.getElementById('chat-content');
+
+    while (chatContent.querySelectorAll('.m-row').length > maxMessages) {
+        const oldest = chatContent.querySelector('.m-row');
+        if (!oldest) break;
+        oldest.remove();
+    }
+}
+
+    // --- Dashboard-data laden ---
+    function loadRecentGrades() {
+        const container = document.getElementById('recentGradesContent');
+        container.innerHTML = '<div class="skeleton-card"></div>';
+        fetch('/grades', { credentials: 'include' })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+                return res.json();
+            })
+            .then(grades => {
+                if (!grades || grades.length === 0) {
+                    container.innerHTML = '<p>Geen cijfers beschikbaar.</p>';
+                    return;
+                }
+                const recent = grades.slice(0, 3);
+                let html = '<ul class="grade-list">';
+                recent.forEach(g => {
+                    html += `<li><span class="grade-subject">${escapeHtml(g.module)}</span> <span class="grade-value">${escapeHtml(g.grade)}</span></li>`;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                container.innerHTML = '<p>Fout bij laden cijfers.</p>';
+            });
+    }
+
+    function loadNextLesson() {
+        const container = document.getElementById('nextLessonContent');
+        container.innerHTML = '<div class="skeleton-card"></div>';
+
+        fetch('/schedule', { credentials: 'include' })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+                return res.json();
+            })
+            .then(schedule => {
+                if (!schedule || schedule.length === 0) {
+                    container.innerHTML = '<p>Geen lessen gepland.</p>';
+                    return;
+                }
+
+                const items = Array.isArray(schedule) ? schedule : [schedule];
+                const now = new Date();
+                const currentDayIndex = now.getDay(); // 0 = zondag
+                const currentTime = now.getHours() * 60 + now.getMinutes();
+
+                const dayMapping = {
+                    'maandag': 1, 'dinsdag': 2, 'woensdag': 3,
+                    'donderdag': 4, 'vrijdag': 5, 'zaterdag': 6, 'zondag': 0
+                };
+
+                const lessonsWithDate = items.map(item => {
+                    const dayName = item.day.toLowerCase();
+                    const dayIndex = dayMapping[dayName];
+                    if (dayIndex === undefined) return null;
+
+                    const [hours, minutes] = item.time.split(':').map(Number);
+                    if (isNaN(hours) || isNaN(minutes)) return null;
+
+                    let daysUntil = dayIndex - currentDayIndex;
+                    if (daysUntil < 0) daysUntil += 7;
+                    if (daysUntil === 0) {
+                        const lessonTime = hours * 60 + minutes;
+                        if (lessonTime < currentTime) daysUntil = 7;
+                    }
+
+                    const lessonDate = new Date(now);
+                    lessonDate.setDate(now.getDate() + daysUntil);
+                    lessonDate.setHours(hours, minutes, 0, 0);
+
+                    return { ...item, nextDate: lessonDate, daysUntil };
+                }).filter(item => item !== null);
+
+                if (lessonsWithDate.length === 0) {
+                    container.innerHTML = '<p>Geen lessen beschikbaar.</p>';
+                    return;
+                }
+
+                lessonsWithDate.sort((a, b) => a.nextDate - b.nextDate);
+                const next = lessonsWithDate[0];
+
+                let dayText;
+                if (next.daysUntil === 0) dayText = 'Vandaag';
+                else if (next.daysUntil === 1) dayText = 'Morgen';
+                else {
+                    const days = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+                    dayText = days[next.nextDate.getDay()];
+                }
+
+                const html = `
+                    <div class="next-lesson-block">
+                        <div class="next-lesson-time">${escapeHtml(next.time)}</div>
+                        <div class="next-lesson-details"><i class="fas fa-book"></i> ${escapeHtml(next.module)}</div>
+                        <div class="next-lesson-room"><i class="fas fa-door-open"></i> ${escapeHtml(next.room)}</div>
+                        <div style="margin-top:10px; font-size:0.9rem; color:#95a5a6;">${dayText}</div>
+                    </div>
+                `;
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                container.innerHTML = '<p>Fout bij laden rooster.</p>';
+            });
+    }
+
+    // --- Greeting & Date update ---
+    function updateGreetingAndDate(fullName) {
+        const greetingEl = document.getElementById('greeting');
+        const dateEl = document.getElementById('currentDate');
+        const now = new Date();
+        const hour = now.getHours();
+        let greet = '';
+        if (hour >= 5 && hour < 12) greet = 'Goedemorgen';
+        else if (hour >= 12 && hour < 18) greet = 'Goedemiddag';
+        else greet = 'Goedenavond';
+        greetingEl.textContent = `${greet}, ${fullName}`;
+        
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const nlDate = now.toLocaleDateString('nl-NL', options);
+        dateEl.textContent = nlDate.charAt(0).toUpperCase() + nlDate.slice(1);
+    }
+
+    // --- Skeletons (bestaand) ---
     function showGradesSkeleton() {
         const container = document.getElementById('grades-container');
         let skeletonHtml = '<div class="skeleton-table">';
         for (let i = 0; i < 3; i++) {
             skeletonHtml += '<div class="skeleton-row">';
-            for (let j = 0; j < 2; j++) {
-                skeletonHtml += '<div class="skeleton-cell"></div>';
-            }
+            for (let j = 0; j < 2; j++) skeletonHtml += '<div class="skeleton-cell"></div>';
             skeletonHtml += '</div>';
         }
         skeletonHtml += '</div>';
@@ -439,9 +783,7 @@
         let skeletonHtml = '<div class="skeleton-table">';
         for (let i = 0; i < 3; i++) {
             skeletonHtml += '<div class="skeleton-row">';
-            for (let j = 0; j < 4; j++) {
-                skeletonHtml += '<div class="skeleton-cell"></div>';
-            }
+            for (let j = 0; j < 4; j++) skeletonHtml += '<div class="skeleton-cell"></div>';
             skeletonHtml += '</div>';
         }
         skeletonHtml += '</div>';
@@ -453,6 +795,7 @@
         showGradesSkeleton();
         try {
             const res = await fetch('/grades', { credentials: 'include' });
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
             const grades = await res.json();
             if (!grades || grades.length === 0) {
                 container.innerHTML = `<p style="padding:20px;">Geen cijfers gevonden.</p>`;
@@ -474,13 +817,13 @@
         showScheduleSkeleton();
         try {
             const res = await fetch('/schedule', { credentials: 'include' });
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
             const schedule = await res.json();
             if (!schedule || (Array.isArray(schedule) && schedule.length === 0) || Object.keys(schedule).length === 0) {
                 container.innerHTML = `<p style="padding:20px;">Geen rooster gevonden.</p>`;
                 return;
             }
             let html = '<table class="data-table"><tr><th>Module</th><th>Dag</th><th>Tijd</th><th>Lokaal</th></tr>';
-            // Ondersteuning voor array (meerdere items) of één object
             const items = Array.isArray(schedule) ? schedule : [schedule];
             items.forEach(item => {
                 html += `<tr><td>${escapeHtml(item.module)}</td><td>${escapeHtml(item.day)}</td><td>${escapeHtml(item.time)}</td><td>${escapeHtml(item.room)}</td></tr>`;
@@ -497,9 +840,10 @@
         const p = document.getElementById('p').value;
         const loginBtn = document.getElementById('loginBtn');
         const errEl = document.getElementById('err');
+
+        loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Bezig...';
         loginBtn.disabled = true;
-        loginBtn.innerText = "Inloggen...";
-        errEl.style.display = 'none'; // verberg vorige foutmelding
+        errEl.style.display = 'none';
 
         try {
             const res = await fetch('/login', {
@@ -512,34 +856,83 @@
             if(res.ok) {
                 const data = await res.json();
                 currentLoggedUser = data.username;
+                sessionStorage.setItem('username', data.username);
+                sessionStorage.setItem('full_name', data.full_name);
                 document.getElementById('login-wrap').style.display = 'none';
                 document.getElementById('portal').style.display = 'flex';
                 document.getElementById('user-name').innerText = "👤 " + data.full_name;
 
-                // Auto-open chat na 800ms en toon Fawaka welkomstbericht
+                updateGreetingAndDate(data.full_name);
+
+                if (data.username === "admin") {
+                    document.getElementById('adminBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('adminBtn').style.display = 'none';
+                }
+
+                // Dashboard-data meteen laden
+                loadRecentGrades();
+                loadNextLesson();
+
                 setTimeout(() => {
                     toggleChat();
                     addBotMessage(`Fawaka ${data.full_name}! Ik ben je virtuele UNASAT assistent. Hoe kan ik je vandaag helpen met je studie?`);
-                    hasWelcomed = true; // voorkom dat toggleChat later nog een welkomstbericht toont
+                    hasWelcomed = true;
                 }, 800);
             } else {
                 errEl.style.display = 'block';
             }
         } catch (e) {
-            // Netwerkfout of server onbereikbaar
             errEl.style.display = 'block';
         } finally {
+            loginBtn.innerHTML = 'Inloggen';
             loginBtn.disabled = false;
-            loginBtn.innerText = "Inloggen";
+        }
+    }
+
+    // Sessie verifiëren bij herladen
+    async function initFromSession() {
+        const username = sessionStorage.getItem('username');
+        const fullName = sessionStorage.getItem('full_name');
+
+        // Geen sessie in storage -> blijf op inlogscherm
+        if (!username || !fullName) return;
+
+        // Probeer /me om te zien of cookie nog geldig is
+        try {
+            const res = await fetch('/me', { credentials: 'include' });
+            if (res.ok) {
+                const me = await res.json();
+                // Gebruik de naam van de server, die is betrouwbaarder
+                document.getElementById('login-wrap').style.display = 'none';
+                document.getElementById('portal').style.display = 'flex';
+                document.getElementById('user-name').innerText = "👤 " + fullName;
+                updateGreetingAndDate(fullName);
+
+                if (me.username === "admin") {
+                    document.getElementById('adminBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('adminBtn').style.display = 'none';
+                }
+
+                loadRecentGrades();
+                loadNextLesson();
+            } else {
+                // Cookie niet geldig -> clean storage
+                sessionStorage.clear();
+                // Blijf op inlogscherm
+            }
+        } catch (e) {
+            // Netwerkfout, waarschijnlijk offline -> blijf op inlogscherm
+            sessionStorage.clear();
         }
     }
 
     function toggleChat() {
-    // Alleen openen als de gebruiker is ingelogd (portal zichtbaar)
-    if (document.getElementById('portal').style.display !== 'flex') return;
-    const w = document.getElementById('chat-win');
-    w.style.display = w.style.display !== 'flex' ? 'flex' : 'none';
-}
+        if (document.getElementById('portal').style.display !== 'flex') return;
+        const w = document.getElementById('chat-win');
+        w.style.display = w.style.display !== 'flex' ? 'flex' : 'none';
+    }
 
     function quickAsk(text) {
         document.getElementById('msg-in').value = text;
@@ -548,17 +941,19 @@
 
     async function sendStream() {
         const input = document.getElementById('msg-in');
+        // Voorkom dubbele requests als Enter wordt gespamd
+        if (input.disabled) return;
+
         const box = document.getElementById('chat-content');
         const val = input.value.trim();
         if(!val) return;
 
-        // Gebruikersbericht tonen
         const userMsgHtml = `<div class="m-row u-row"><div class="msg u-msg">${escapeHtml(val)}</div></div>`;
         box.insertAdjacentHTML("beforeend", userMsgHtml);
+        limitChatMessages();
         input.value = "";
-        input.disabled = true; // uitschakelen tijdens stream
+        input.disabled = true;
 
-        // Maak een leeg botbericht aan met typing indicator
         const botMsgDiv = document.createElement('div');
         botMsgDiv.className = 'm-row';
         botMsgDiv.innerHTML = `<img src="/static/logo.png" class="bot-icon"><div class="msg b-msg"><em>Typen...</em></div>`;
@@ -566,9 +961,8 @@
         const botMsgContent = botMsgDiv.querySelector('.msg');
         box.scrollTop = box.scrollHeight;
 
-        // AbortController voor timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconden timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 sec timeout
 
         try {
             const response = await fetch('/chat/stream', {
@@ -578,7 +972,6 @@
                 body: JSON.stringify({ text: val }),
                 signal: controller.signal
             });
-            clearTimeout(timeoutId); // timeout gehaald, niet nodig
 
             if (!response.ok) {
                 throw new Error(`HTTP error ${response.status}`);
@@ -588,36 +981,40 @@
             const decoder = new TextDecoder();
             let buffer = "";
             let fullText = "";
+            let done = false;
 
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n\n');
-                buffer = lines.pop() || "";
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const jsonStr = line.slice(6);
-                        try {
-                            const data = JSON.parse(jsonStr);
-                            if (data.chunk) {
-                                fullText += data.chunk;
-                                // Toon platte tekst tijdens stream, geen markdown
-                                botMsgContent.textContent = fullText;
-                            } else if (data.done) {
-                                // Eindelijk markdown renderen
-                                const cleanHtml = DOMPurify.sanitize(marked.parse(fullText));
-                                botMsgContent.innerHTML = cleanHtml;
-                                botMsgContent.insertAdjacentHTML("beforeend", `<div class="f-bar"><span onclick="feed(${data.id}, 'good', this)">👍</span> <span onclick="feed(${data.id}, 'bad', this)">👎</span> | ${data.latency}s response</div>`);
-                            }
-                        } catch (e) {}
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                if (value) {
+                    buffer += decoder.decode(value, { stream: true });
+                    // Splits op \r\n\r\n of \n\n voor maximale compatibiliteit
+                    const lines = buffer.split(/\r?\n\r?\n/);
+                    buffer = lines.pop() || "";
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const jsonStr = line.slice(6);
+                            try {
+                                const data = JSON.parse(jsonStr);
+                                if (data.chunk) {
+                                    fullText += data.chunk;
+                                    botMsgContent.textContent = fullText;
+                                } else if (data.done) {
+                                    const cleanHtml = DOMPurify.sanitize(marked.parse(fullText));
+                                    botMsgContent.innerHTML = cleanHtml;
+                                    botMsgContent.insertAdjacentHTML("beforeend", `<div class="f-bar"><span onclick="feed(${data.id}, 'good', this)">👍</span> <span onclick="feed(${data.id}, 'bad', this)">👎</span> | ${data.latency}s response</div>`);
+                                    limitChatMessages();
+                                }
+                            } catch (e) {}
+                        }
                     }
                 }
                 box.scrollTop = box.scrollHeight;
             }
+            clearTimeout(timeoutId); // stream is klaar, timeout opruimen
         } catch (e) {
-            botMsgDiv.remove(); // verwijder het bericht met typing indicator
-            // Specifiek voor AbortError (timeout)
+            clearTimeout(timeoutId); // bij fout ook timeout stoppen
+            botMsgDiv.remove();
             if (e.name === 'AbortError') {
                 addBotMessage("Het antwoord duurde te lang. Probeer het opnieuw.");
             } else if (e.message.includes("429")) {
@@ -628,7 +1025,6 @@
                 addBotMessage("Sorry, er is een technische fout opgetreden. Probeer het later opnieuw.");
             }
         } finally {
-            clearTimeout(timeoutId); // extra veiligheid
             input.disabled = false;
             input.focus();
         }
@@ -651,6 +1047,7 @@
         const msgHtml = `<div class="m-row"><img src="/static/logo.png" class="bot-icon"><div class="msg b-msg">${cleanHtml}${feedback}</div></div>`;
         box.insertAdjacentHTML("beforeend", msgHtml);
         box.scrollTop = box.scrollHeight;
+        limitChatMessages();
     }
 
     async function feed(id, score, el) {
@@ -671,6 +1068,7 @@
         container.innerHTML = `<p style="padding:20px;">Laden...</p>`;
         try {
             const res = await fetch('/my-logs', { credentials: 'include' });
+            if (!res.ok) throw new Error(`HTTP error ${res.status}`);
             const logs = await res.json();
             if (logs.length === 0) {
                 container.innerHTML = `<p style="padding:20px;">Je hebt nog geen gesprekken gevoerd.</p>`;
@@ -704,7 +1102,16 @@
         }
     }
 
-    // Verbeterde escapeHtml met null/undefined check en ook ' escapen
+    async function logout() {
+        await fetch('/logout', { method: 'POST', credentials: 'include' });
+        sessionStorage.clear();
+        window.location.href = '/';
+    }
+
+    function openAdmin() {
+        window.open('/admin', '_blank');
+    }
+
     function escapeHtml(unsafe) {
         if (unsafe === null || unsafe === undefined) return '';
         return String(unsafe).replace(/[&<>"']/g, function(m) {
@@ -712,10 +1119,13 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             if (m === '"') return '&quot;';
-            if (m === "'") return '&#39;'; // of &apos; maar &#39; is breder ondersteund
+            if (m === "'") return '&#39;';
             return m;
         });
     }
+
+    // Start: sessie valideren bij laden
+    window.addEventListener('DOMContentLoaded', initFromSession);
 </script>
 </body>
 </html>

@@ -547,6 +547,17 @@ async def admin_check(username: str = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Geen admin")
     return {"admin": True}
 
+# ------------------ LOGOUT ------------------
+@app.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(key="access_token")
+    return {"status": "ok"}
+
+# ------------------ GET CURRENT USER ------------------
+@app.get("/me")
+async def get_me(username: str = Depends(get_current_user)):
+    return {"username": username}
+
 @app.post("/admin/create-user")
 async def create_user(data: NewUserData, admin_username: str = Depends(get_current_user)):
     if admin_username != "admin":
