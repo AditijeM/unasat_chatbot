@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNASAT Student SIS v2.0</title>
+    <!-- Beveiliging: Markdown parser + XSS sanitizer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <style>
         :root { 
             --unasat-blue: #003366; 
@@ -387,7 +390,6 @@
         </div>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     let currentLoggedUser = "Gast";
     let hasWelcomed = false;
@@ -423,12 +425,14 @@ function closeSidebar() {
     if (tabId === 'mylogs') fetchMyLogs();
 }
 
-    // Nieuwe functie voor cijfers (zonder AI)
+    // Cijfers ophalen zonder username (backend haalt uit JWT cookie)
     async function fetchGrades() {
         const container = document.getElementById('grades-container');
         container.innerHTML = `<p style="padding:20px;">Cijfers laden...</p>`;
         try {
-            const res = await fetch(`/grades?username=${encodeURIComponent(currentLoggedUser)}`);
+            const res = await fetch('/grades', {
+                credentials: 'include'   // stuurt de HttpOnly cookie mee
+            });
             const grades = await res.json();
             if (!grades || grades.length === 0) {
                 container.innerHTML = `<p style="padding:20px;">Geen cijfers gevonden.</p>`;
@@ -445,19 +449,20 @@ function closeSidebar() {
         }
     }
 
-    // Nieuwe functie voor rooster (zonder AI)
+    // Rooster ophalen zonder username
     async function fetchSchedule() {
         const container = document.getElementById('rooster-container');
         container.innerHTML = `<p style="padding:20px;">Rooster laden...</p>`;
         try {
-            const res = await fetch(`/schedule?username=${encodeURIComponent(currentLoggedUser)}`);
+            const res = await fetch('/schedule', {
+                credentials: 'include'
+            });
             const schedule = await res.json();
             if (!schedule) {
                 container.innerHTML = `<p style="padding:20px;">Geen rooster gevonden.</p>`;
                 return;
             }
             let html = '<table class="data-table"><tr><th>Module</th><th>Dag</th><th>Tijd</th><th>Lokaal</th></tr>';
-            // schedule is één object (fetchone) – als je meerdere lessen wilt, moet je de functie aanpassen
             html += `<tr><td>${escapeHtml(schedule.module)}</td><td>${escapeHtml(schedule.day)}</td><td>${escapeHtml(schedule.time)}</td><td>${escapeHtml(schedule.room)}</td></tr>`;
             html += '</table>';
             container.innerHTML = html;
@@ -472,6 +477,7 @@ function closeSidebar() {
         const res = await fetch('/login', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            credentials: 'include',          // belangrijk voor cookie
             body: JSON.stringify({username: u, password: p})
         });
 
@@ -524,7 +530,8 @@ function closeSidebar() {
             const res = await fetch('/chat', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ text: val, username: currentLoggedUser })
+                credentials: 'include',          // cookie meesturen
+                body: JSON.stringify({ text: val })   // géén username meer
             });
 
             if (!res.ok) {
@@ -555,7 +562,9 @@ function closeSidebar() {
         const loader = document.getElementById('bot-loader');
         if(loader) loader.remove();
 
-        const htmlContent = marked.parse(text);
+        // Converteer Markdown en sanitize (XSS-beveiliging)
+        const rawHtml = marked.parse(text);
+        const cleanHtml = DOMPurify.sanitize(rawHtml);
 
         let feedback = id ? `
             <div class="f-bar">
@@ -568,7 +577,7 @@ function closeSidebar() {
             <div class="m-row">
                 <img src="/static/logo.png" class="bot-icon">
                 <div class="msg b-msg">
-                    ${htmlContent}
+                    ${cleanHtml}
                     ${feedback}
                 </div>
             </div>`;
@@ -592,7 +601,9 @@ function closeSidebar() {
         const container = document.getElementById('mylogs-container');
         container.innerHTML = `<p style="padding:20px;">Laden...</p>`;
         try {
-            const res = await fetch(`/my-logs?username=${encodeURIComponent(currentLoggedUser)}`);
+            const res = await fetch('/my-logs', {
+                credentials: 'include'    // geen query parameter, cookie bevat username
+            });
             const logs = await res.json();
             
             if (logs.length === 0) {

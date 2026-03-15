@@ -2,13 +2,19 @@ import os
 import time
 import logging
 import requests
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from pydantic import BaseModel
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
+from passlib.context import CryptContext
+from typing import Optional
 
 from langdetect import detect, DetectorFactory
 DetectorFactory.seed = 0
@@ -20,6 +26,9 @@ import database as db
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 uur
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("unasat-ai-mentor")
@@ -28,9 +37,40 @@ app = FastAPI(title="UNASAT AI Student Mentor")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 db.init_db()
 
+# CORS voor cookies toestaan (frontend op zelfde domein)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(429, _rate_limit_exceeded_handler)
+
+# ------------------ JWT & AUTH ------------------
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_user(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Niet ingelogd")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Ongeldig token")
+        return username
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Ongeldig token")
 
 # ------------------ STATE ------------------
 active_conversations = {}
@@ -46,13 +86,10 @@ def load_knowledge_base():
 # ------------------ INTENT DETECTIE ------------------
 def detect_intent(text: str):
     t = text.lower()
-    # Alles wat met persoonlijke data te maken heeft (wordt nu behandeld door aparte endpoints, maar voor chat blijft)
     if any(w in t for w in ["cijfer", "resultaat", "punten", "rooster", "les", "planning", "gemiddelde", "schema"]):
         return "personal"
-    # Studieadvies (blijft apart omdat het twee stappen heeft)
     if any(w in t for w in ["advies", "opleiding", "studie kiezen", "welke studie"]):
         return "advice_step_1"
-    # Emotionele ondersteuning
     if any(w in t for w in ["stress", "overweldigd", "moeilijk", "twijfel", "motivatie"]):
         return "emotional_support"
     return "general"
@@ -62,6 +99,7 @@ def build_system_prompt(mode: str, language: str, student_data=None):
     kb = load_knowledge_base()
     taal = language  # 'nl' of 'en'
 
+    # Basis zonder de foute placeholder
     basis = f"""Je bent de officiële AI Student Mentor van de University of Applied Sciences and Technology (UNASAT) in Paramaribo, Suriname.
 
 ## COMMUNICATIESTIJL
@@ -70,10 +108,6 @@ def build_system_prompt(mode: str, language: str, student_data=None):
 - Gebruik altijd de volledige naam "University of Applied Sciences and Technology (UNASAT)" bij de eerste vermelding in een antwoord.
 - Houd antwoorden bondig (5-8 zinnen), tenzij het om een uitgebreide analyse gaat.
 - Als informatie niet in de knowledge base staat, zeg dan eerlijk: "Deze informatie is niet beschikbaar in de UNASAT-database." (of Engels equivalent).
-
-## KENNISBANK
-{['kb']}  # we voegen later de echte kb toe
-
 """
 
     # Specifieke instructies per mode
@@ -120,7 +154,6 @@ Beantwoord vragen over UNASAT, de opleidingen, locatie, etc. uitsluitend op basi
 def build_messages(system_prompt, history, user_input, student_data=None):
     messages = [{"role": "system", "content": system_prompt}]
 
-    # Voeg student data toe als extra system message (optioneel)
     if student_data:
         data_str = ""
         if student_data.get("grades"):
@@ -130,12 +163,10 @@ def build_messages(system_prompt, history, user_input, student_data=None):
             data_str += f"VOLGENDE LES: {s['module']} op {s['day']} om {s['time']} in {s['room']}\n"
         messages.append({"role": "system", "content": f"STUDENT DATA:\n{data_str}"})
 
-    # Voeg geschiedenis toe
     for item in history:
         messages.append({"role": "user", "content": item["user_input"]})
         messages.append({"role": "assistant", "content": item["bot_reply"]})
 
-    # Huidige vraag
     messages.append({"role": "user", "content": user_input})
     return messages
 
@@ -158,39 +189,33 @@ def call_groq(messages):
 # ------------------ CHAT ROUTE ------------------
 @app.post("/chat")
 @limiter.limit("10/minute")
-async def chat(message: ChatMessage, request: Request):
+async def chat(message: ChatMessage, request: Request, username: str = Depends(get_current_user)):
     start = time.time()
     user_input = message.text
-    username = message.username
 
-    # Taaldetectie
+    # Taaldetectie robuuster
     try:
-        language = detect(user_input)
+        detected = detect(user_input)
+        language = "nl" if detected.startswith("nl") else "en"
     except:
         language = "nl"
 
-    # Geschiedenis (max 6 berichten voor context)
     history = db.get_conversation_history(username, limit=6)
-
-    # Intentie bepalen
     intent = detect_intent(user_input)
     mode = intent
 
-    # Data ophalen voor persoonlijke vragen (indien nodig)
     student_data = None
     if intent == "personal":
         grades = db.get_student_grades(username)
         schedule = db.get_student_schedule(username)
         student_data = {"grades": grades, "schedule": schedule}
 
-    # Adviesflow (twee stappen)
     if username in active_conversations and active_conversations[username] == "waiting":
         mode = "advice_step_2"
         del active_conversations[username]
     elif intent == "advice_step_1":
         active_conversations[username] = "waiting"
 
-    # Bouw system prompt en messages
     system_prompt = build_system_prompt(mode, language, student_data)
     messages = build_messages(system_prompt, history, user_input, student_data)
 
@@ -204,24 +229,43 @@ async def chat(message: ChatMessage, request: Request):
     log_id = db.log_chat(user_input, reply, latency, username)
     return {"reply": reply, "latency": latency, "id": log_id}
 
-# ------------------ NIEUWE DATA-ONTSLUITING ENDPOINTS ------------------
+# ------------------ LOGIN ROUTE (MET JWT COOKIE) ------------------
+@app.post("/login")
+async def login(data: LoginData, response: HTMLResponse):
+    user = db.verify_user(data.username, data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Fout")
+
+    # Genereer JWT token
+    access_token = create_access_token(data={"sub": user["username"]})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        expires=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        secure=False,  # Zet op True als je HTTPS gebruikt (lokaal is False)
+        samesite="lax"
+    )
+    return {"full_name": user['full_name'], "username": user['username']}
+
+# ------------------ DATA-ONTSLUITING (geen username in query, uit token) ------------------
 @app.get("/grades")
-async def get_grades(username: str):
-    """Haal alle cijfers van een student op (zonder AI)"""
+async def get_grades(username: str = Depends(get_current_user)):
     grades = db.get_student_grades(username)
-    if not grades:
-        return []
-    return grades
+    return grades if grades else []
 
 @app.get("/schedule")
-async def get_schedule(username: str):
-    """Haal het rooster van een student op (zonder AI)"""
+async def get_schedule(username: str = Depends(get_current_user)):
     schedule = db.get_student_schedule(username)
-    if not schedule:
-        return None
-    return schedule
+    return schedule if schedule else {}
 
-# ------------------ OVERIGE ROUTES (ONVERANDERD) ------------------
+@app.get("/my-logs")
+async def my_logs(username: str = Depends(get_current_user)):
+    logs = db.get_logs_by_user(username)
+    return logs
+
+# ------------------ OVERIGE ROUTES ------------------
 @app.post("/feedback")
 async def feedback(data: FeedbackData):
     db.save_feedback(data.id, data.score)
@@ -231,13 +275,6 @@ async def feedback(data: FeedbackData):
 async def home():
     with open("static/index.html", "r", encoding="utf-8") as f:
         return f.read()
-
-@app.post("/login")
-async def login(data: LoginData):
-    user = db.verify_user(data.username, data.password)
-    if user:
-        return {"full_name": user['full_name'], "username": user['username']}
-    raise HTTPException(status_code=401, detail="Fout")
 
 @app.get("/stats")
 async def stats():
@@ -265,26 +302,6 @@ async def get_logs():
             "timestamp": d.get('timestamp')
         })
     return result
-
-@app.get("/my-logs")
-async def my_logs(username: str):
-    try:
-        logs = db.get_logs_by_user(username)
-        result = []
-        for row in logs:
-            d = dict(row)
-            result.append({
-                "id": d.get('id'),
-                "user_input": d.get('user_input'),
-                "bot_reply": d.get('bot_reply'),
-                "latency": d.get('latency'),
-                "feedback": d.get('feedback'),
-                "timestamp": d.get('timestamp')
-            })
-        return result
-    except Exception as e:
-        logger.error(f"Fout in /my-logs voor {username}: {e}")
-        raise HTTPException(status_code=500, detail=f"Databasefout: {str(e)}")
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page():
