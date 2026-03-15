@@ -105,8 +105,20 @@ def init_db():
         )
         print("--- TESTDATA TOEGEVOEGD (gehasht wachtwoord) ---")
     
+    # Admin gebruiker toevoegen (als die nog niet bestaat)
+    cursor.execute("SELECT * FROM users WHERE username = 'admin'")
+    if not cursor.fetchone():
+        hashed_pw = hash_password('admin123')
+        cursor.execute(
+            "INSERT INTO users (username, password, full_name) VALUES (%s, %s, %s)",
+            ('admin', hashed_pw, 'Administrator')
+        )
+        print("--- ADMIN GEBRUIKER AANGEMAAKT (wachtwoord: admin123) ---")
+
     conn.commit()
     conn.close()
+
+
 
 def verify_user(username, password):
     conn = get_db_connection()
@@ -130,9 +142,9 @@ def get_student_schedule(username):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT module, day, time, room FROM schedule WHERE username = %s", (username,))
-    res = cursor.fetchone()
+    res = cursor.fetchall()   # ← fetchall i.p.v. fetchone
     conn.close()
-    return res
+    return res   # geeft een lijst (mogelijk leeg)
 
 def log_chat(user_input, reply, latency, username):
     conn = get_db_connection()

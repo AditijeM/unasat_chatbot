@@ -9,3 +9,6 @@ bcrypt
 langdetect
 python-jose[cryptography]
 passlib[bcrypt]
+httpx
+sentence-transformers
+faiss-cpu
